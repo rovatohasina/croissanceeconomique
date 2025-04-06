@@ -1,7 +1,10 @@
 streamlit
-wbdata
+wbdata==1.0.0
 matplotlib==3.9.2
-pandas
-numpy
+pandas==.2.3
+numpy==1.26.4
 plotly==5.24.1
 scikit-learn==1.5.2
+requests==2.32.3
+scipy==1.14.1
+joblib==1.4.2
