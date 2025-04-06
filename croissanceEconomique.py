@@ -142,6 +142,8 @@ with st.container():
     with col4:
         pib_current = df['PIB'].dropna().iloc[-1]
         pib_previous = df['PIB'].dropna().iloc[-2]
+        year_current = df['Year'].dropna().iloc[-1]
+        year_previous = df['Year'].dropna().iloc[-2]
         difference_pib = pib_current - pib_previous
         growth_percentage = ((difference_pib) / pib_previous) * 100
         text_color = "green" if growth_percentage >= 0 else "red"
@@ -149,6 +151,7 @@ with st.container():
         st.markdown(
     f"""
     <div style="background-color: white; padding: 10px; border-radius: 5px; text-align: center; box-shadow: 0px 4px 6px rgba(0,0,0,0.3);">
+        <span style="color: black; font-size: 20px;">difference entre{year_previous} et {year_current}</span><br>
         <span style="color: black; font-size: 20px;">PIB actuel</span><br>
         <span style="color: {text_color}; font-size: 24px; font-weight: bold;">{sign} {growth_percentage:.2f}%</span>
     </div>
