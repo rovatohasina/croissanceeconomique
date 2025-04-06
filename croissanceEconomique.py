@@ -69,7 +69,6 @@ df.rename(columns={'date': 'Year'}, inplace=True)
 df['Year'] = df['Year'].apply(lambda x: int(x.replace("YR", "")) if isinstance(x, str) else x)
 # Inverse l'ordre des lignes
 # df = df.iloc[::-1]  
-st.write("Version de wbdata :", wbdata.__version__)
 
 df_depenses = wbdata.get_dataframe(indicators_depenses, country="MDG")
 df_depenses.reset_index(inplace=True)
@@ -91,8 +90,6 @@ min_year, max_year = df['Year'].min(), df['Year'].max()
 selected_years = st.sidebar.slider("Sélectionner une plage d'années", min_year, max_year, (min_year, max_year), 1)
 filtered_data = df[(df['Year'] >= selected_years[0]) & (df['Year'] <= selected_years[1])]
 filtered_data.dropna(inplace=True)
-st.write(df.dtypes)  # Vérifie le type des colonnes
-st.write(df['Year'].unique())
 # Titre
 st.title("Analyse de la croissance économique")
 st.write("")
