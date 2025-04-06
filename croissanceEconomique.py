@@ -263,30 +263,36 @@ df_grouped_recettes.fillna(0, inplace=True)
 
 st.write("")
 st.write("")
+
 col1, col2 = st.columns(2)
 with col1:
     st.subheader("Répartition des types de dépenses")
     selected_expenses = st.multiselect("Sélectionnez les types de dépenses", list(indicators_depenses.values()), default=list(indicators_depenses.values()))
-    selected_decade_depenses = st.selectbox("Sélectionnez une décennie pour les dépenses", [2020])    
-    fig, ax = plt.subplots(figsize=(6, 4))
-    ax.barh(selected_expenses, [10, 20, 30, 40], color=['blue', 'green', 'red', 'orange'])
-    ax.set_ylabel("Type de dépense")
-    ax.set_xlabel("% du PIB")
-    ax.set_title(f"Répartition des types de dépenses dans les années {selected_decade_depenses}")
-    ax.grid(axis='x')
-    st.pyplot(fig)
+    selected_decade_depenses = st.selectbox("Sélectionnez une décennie pour les dépenses", sorted(df_grouped_depenses['Decade'].unique(), reverse=True))
+    filtered_df_depenses = df_grouped_depenses[df_grouped_depenses['Decade'] == selected_decade_depenses][selected_expenses]
+    if not filtered_df_depenses.empty:
+        expense_values = filtered_df_depenses.iloc[0].values
+        fig, ax = plt.subplots(figsize=(10, 6))
+        ax.barh(selected_expenses, expense_values, color=['blue', 'green', 'red', 'orange'])
+        ax.set_ylabel("Type de dépense")
+        ax.set_xlabel("% du PIB")
+        ax.set_title(f"Répartition des types de dépenses dans les années {selected_decade_depenses}")
+        ax.grid(axis='x')
+        st.pyplot(fig)
 with col2:
     st.subheader("Répartition des types de recettes")
     selected_recettes = st.multiselect("Sélectionnez les types de recettes", list(indicators_recettes.values()), default=list(indicators_recettes.values()))
-    selected_decade_recettes = st.selectbox("Sélectionnez une décennie pour les recettes", [2020])
-    fig, ax = plt.subplots(figsize=(6, 4))
-    ax.barh(selected_recettes, [15, 25, 35], color=['blue', 'green', 'red'])
-    ax.set_ylabel("Type de recette")
-    ax.set_xlabel("% du PIB")
-    ax.set_title(f"Répartition des types de recettes dans les années {selected_decade_recettes}")
-    ax.grid(axis='x')
-    st.pyplot(fig)
-
+    selected_decade_recettes = st.selectbox("Sélectionnez une décennie pour les recettes", sorted(df_grouped_recettes['Decade'].unique(), reverse=True))
+    filtered_df_recettes = df_grouped_recettes[df_grouped_recettes['Decade'] == selected_decade_recettes][selected_recettes]
+    if not filtered_df_recettes.empty:
+        recette_values = filtered_df_recettes.iloc[0].values
+        fig, ax = plt.subplots(figsize=(10, 6))
+        ax.barh(selected_recettes, recette_values, color=['blue', 'green', 'red', 'orange'])
+        ax.set_ylabel("Type de recette")
+        ax.set_xlabel("% du PIB")
+        ax.set_title(f"Répartition des types de recettes dans les années {selected_decade_recettes}")
+        ax.grid(axis='x')
+        st.pyplot(fig)
 #Ventilation
 st.write("")
 st.write("")
