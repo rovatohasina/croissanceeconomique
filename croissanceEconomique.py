@@ -68,8 +68,7 @@ def get_data():
     df = wbdata.get_dataframe(indicators, country="MDG")
     df.reset_index(inplace=True)
     df.rename(columns={'date': 'Year'}, inplace=True)
-    # df['Year'] = df['Year'].apply(lambda x: int(x.replace("YR", "")) if isinstance(x, str) else x)
-    df['Year'] = pd.to_datetime(df['Year'], format='%Y')
+    df['Year'] = df['Year'].apply(lambda x: int(x.replace("YR", "")) if isinstance(x, str) else x)
     return df
 df = get_data()
 # Inverse l'ordre des lignes
@@ -88,18 +87,12 @@ df_recettes['Year'] = df['Year'].apply(lambda x: int(x.replace("YR", "")) if isi
 ventilation = wbdata.get_dataframe(indicators_ventilation_depenses, country="MDG") 
 ventilation.reset_index(inplace=True)
 ventilation.rename(columns={'date': 'Year'}, inplace=True)
-ventilation['Year'] = df['Year'].apply(lambda x: int(x.replace("YR", "")) if isinstance(x, str) else x)
+ventilation['Year'] = df['Year'].astype(int)
 # Sidebar
-min_year = df['Year'].dt.year.min()
-max_year = df['Year'].dt.year.max()
-selected_years = st.sidebar.slider(
-    "Sélectionner une plage d'années", 
-    int(min_year), int(max_year), (int(min_year), int(max_year)), 1
-)
-filtered_data = df[
-    (df['Year'] >= pd.to_datetime(selected_years[0], format='%Y')) & 
-    (df['Year'] <= pd.to_datetime(selected_years[1], format='%Y'))
-]
+st.sidebar.header("Filtrer par année")
+min_year, max_year = df['Year'].min(), df['Year'].max()
+selected_years = st.sidebar.slider("Sélectionner une plage d'années", min_year, max_year, (min_year, max_year), 1)
+filtered_data = df[(df['Year'] >= selected_years[0]) & (df['Year'] <= selected_years[1])]
 filtered_data.dropna(inplace=True)
 # Titre
 st.title("Analyse de la croissance économique")
@@ -211,7 +204,6 @@ forecast_df = pd.DataFrame({
     'PIB': list(filtered_data['PIB']) + [np.nan] * len(future_years), 
     'Prévision PIB': list(filtered_data['Prévision PIB']) + list(future_forecast) 
 })
-forecast_df['Year'] = pd.to_datetime(forecast_df['Year'], format='%Y').dt.year
 st.write("")
 st.write("")
 col1, col2 = st.columns(2)
@@ -223,6 +215,7 @@ with col2:
 # Graphique des prévisions
     st.subheader("Evolution du PIB de Madagascar")
     plt.figure(figsize=(10, 5))
+    # plt.plot(filtered_data['Year'], filtered_data['PIB'])
     plt.plot(forecast_df['Year'], forecast_df['Prévision PIB'], linestyle='-', color='blue')
     plt.title('Prévision du PIB')
     plt.xlabel('Année')
