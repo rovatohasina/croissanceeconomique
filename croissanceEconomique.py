@@ -67,7 +67,7 @@ df = wbdata.get_dataframe(indicators, country="MDG")
 df.reset_index(inplace=True)
 df.rename(columns={'date': 'Year'}, inplace=True)
 df['Year'] = df['Year'].apply(lambda x: int(x.replace("YR", "")) if isinstance(x, str) else x)
-
+df.index = pd.to_datetime(df.index)
 # Inverse l'ordre des lignes
 # df = df.iloc[::-1]  
 
