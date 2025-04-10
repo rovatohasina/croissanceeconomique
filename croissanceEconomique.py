@@ -89,9 +89,9 @@ ventilation = ventilation.dropna(subset=["Paiements d'intérêts","Dépenses mil
 ventilation['Year'] = ventilation['Year'].astype(int)
 # Sidebar
 st.sidebar.header("Filtrer par année")
-min_year, max_year = ventilation['Year'].min(), ventilation['Year'].max()
+min_year, max_year = df['Year'].min(), df['Year'].max()
 selected_years = st.sidebar.slider("Sélectionner une plage d'années", min_year, max_year, (min_year, max_year), 1)
-filtered_data = ventilation[(ventilation['Year'] >= selected_years[0]) & (ventilation['Year'] <= selected_years[1])]
+filtered_data = df[(df['Year'] >= selected_years[0]) & (df['Year'] <= selected_years[1])]
 filtered_data.dropna(inplace=True)
 # Titre
 st.title("Analyse de la croissance économique")
