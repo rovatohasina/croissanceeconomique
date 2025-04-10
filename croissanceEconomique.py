@@ -61,40 +61,38 @@ indicators_recettes = {
     "GC.REV.XGRT.GD.ZS": "Recettes, hors subventions",
     "GC.TAX.YPKG.ZS": "Impôts sur le revenu"
 }
-# Récupération des données pour les différents DataFrames
+
+# Récupération des données
 df = wbdata.get_dataframe(indicators, country="MDG")
 df.reset_index(inplace=True)
 df.rename(columns={'date': 'Year'}, inplace=True)
 df['Year'] = df['Year'].apply(lambda x: int(x.replace("YR", "")) if isinstance(x, str) else x)
+# Inverse l'ordre des lignes
+df = df.iloc[::-1]  
 
 df_depenses = wbdata.get_dataframe(indicators_depenses, country="MDG")
 df_depenses.reset_index(inplace=True)
 df_depenses.rename(columns={'date': 'Year'}, inplace=True)
-df_depenses['Year'] = df_depenses['Year'].apply(lambda x: int(x.replace("YR", "")) if isinstance(x, str) else x)
+df_depenses['Year'] = df['Year'].apply(lambda x: int(x.replace("YR", "")) if isinstance(x, str) else x)
 
 df_recettes = wbdata.get_dataframe(indicators_recettes, country="MDG")
 df_recettes.reset_index(inplace=True)
 df_recettes.rename(columns={'date': 'Year'}, inplace=True)
-df_recettes['Year'] = df_recettes['Year'].apply(lambda x: int(x.replace("YR", "")) if isinstance(x, str) else x)
+df_recettes['Year'] = df['Year'].apply(lambda x: int(x.replace("YR", "")) if isinstance(x, str) else x)
 
-ventilation = wbdata.get_dataframe(indicators_ventilation_depenses, country="MDG")
+ventilation = wbdata.get_dataframe(indicators_ventilation_depenses, country="MDG") 
 ventilation.reset_index(inplace=True)
 ventilation.rename(columns={'date': 'Year'}, inplace=True)
-ventilation['Year'] = ventilation['Year'].apply(lambda x: int(x.replace("YR", "")) if isinstance(x, str) else x)
-
+ventilation['Year'] = df['Year'].astype(int)
 # Sidebar
 st.sidebar.header("Filtrer par année")
 min_year, max_year = df['Year'].min(), df['Year'].max()
 selected_years = st.sidebar.slider("Sélectionner une plage d'années", min_year, max_year, (min_year, max_year), 1)
 filtered_data = df[(df['Year'] >= selected_years[0]) & (df['Year'] <= selected_years[1])]
 filtered_data.dropna(inplace=True)
-
 # Titre
-st.title("Analyse de la croissance économiquess")
+st.title("Analyse de la croissance économique")
 st.write("")
-
-# Affichage des données filtrées pour l'analyse
-
 # Mise en page avec les valeurs en pourcentage
 with st.container():
     col1, col2, col3, col4 = st.columns(4)
@@ -214,7 +212,7 @@ with col2:
     st.subheader("Evolution du PIB de Madagascar")
     plt.figure(figsize=(10, 5))
     # plt.plot(filtered_data['Year'], filtered_data['PIB'])
-    plt.plot(forecast_df['Year'], forecast_df['Prévision PIB'], linestyle='-', color='red')
+    plt.plot(forecast_df['Year'], forecast_df['Prévision PIB'], linestyle='-', color='blue')
     plt.title('Prévision du PIB')
     plt.xlabel('Année')
     plt.ylabel('Croissance du PIB')
