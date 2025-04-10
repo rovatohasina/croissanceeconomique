@@ -8,8 +8,9 @@ from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.linear_model import LinearRegression
 import plotly.express as px
+        # <span style="color: black; font-size: 20px;">difference entre{year_previous} et {year_current}</span><br>
 
-st.set_page_config(page_title="Prévision du PIB", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="Prévision PIB", layout="wide", initial_sidebar_state="expanded")
 st.markdown(
     """
     <style>
@@ -17,13 +18,27 @@ st.markdown(
             background-color: #0F4C60;
             color: white;
         }
+        #     * {
+        #     color: black !important;
+        # }
+
         .stApp {
             background-color: #D3D3D3;
         }
-         color: #FCA311;
+        # h1, h2, h3, h4, h5, h6 {
+        #     color: #FCA311;
         # }
         .stTitle {
             color: white;
+        }
+        .stButton > button {
+            background-color: #3282B8;
+            color: white;
+            border-radius: 10px;
+            border: none;
+        }
+        .stButton > button:hover {
+            background-color: #1B262C;
         }
     </style>
     """,
@@ -49,6 +64,7 @@ indicators_ventilation_depenses = {
     "SH.XPD.GHED.GE.ZS": "Dépenses de santé",
     "SE.XPD.TOTL.GB.ZS": "Dépenses publiques d'éducation",
     "SE.XPD.CTOT.ZS": "Dépenses courantes d'éducation",
+
 }
 indicators_depenses = {
     "GC.XPN.TOTL.GD.ZS": "Dépenses publiques",
@@ -63,37 +79,44 @@ indicators_recettes = {
 }
 
 # Récupération des données
-@st.cache_data
-def get_data():
-    df = wbdata.get_dataframe(indicators, country="MDG")
-    df.reset_index(inplace=True)
-    df.rename(columns={'date': 'Year'}, inplace=True)
-    df['Year'] = df['Year'].apply(lambda x: int(x.replace("YR", "")) if isinstance(x, str) else x)
-    return df
-df = get_data()
-# Inverse l'ordre des lignes
-# df = df.iloc[::-1]  
+df = wbdata.get_dataframe(indicators, country="MDG")
+df.reset_index(inplace=True)
+df.rename(columns={'date': 'Year'}, inplace=True)
+# df['Year'] = df['Year'].apply(lambda x: int(x.replace("YR", "")) if isinstance(x, str) else x)
+df['Year'] = pd.to_datetime(df['Year'], format='%Y')
+# df = df.iloc[::-1]  # Inverse l'ordre des lignes
 
 df_depenses = wbdata.get_dataframe(indicators_depenses, country="MDG")
 df_depenses.reset_index(inplace=True)
 df_depenses.rename(columns={'date': 'Year'}, inplace=True)
-df_depenses['Year'] = df['Year'].apply(lambda x: int(x.replace("YR", "")) if isinstance(x, str) else x)
+df_depenses['Year'] = pd.to_datetime(df['Year'], format='%Y')
+# df_depenses['Year'] = df['Year'].apply(lambda x: int(x.replace("YR", "")) if isinstance(x, str) else x)
 
 df_recettes = wbdata.get_dataframe(indicators_recettes, country="MDG")
 df_recettes.reset_index(inplace=True)
 df_recettes.rename(columns={'date': 'Year'}, inplace=True)
-df_recettes['Year'] = df['Year'].apply(lambda x: int(x.replace("YR", "")) if isinstance(x, str) else x)
+df_recettes['Year'] = pd.to_datetime(df['Year'], format='%Y')
+# df_recettes['Year'] = df['Year'].apply(lambda x: int(x.replace("YR", "")) if isinstance(x, str) else x)
 
 ventilation = wbdata.get_dataframe(indicators_ventilation_depenses, country="MDG") 
 ventilation.reset_index(inplace=True)
 ventilation.rename(columns={'date': 'Year'}, inplace=True)
-ventilation['Year'] = df['Year'].astype(int)
+ventilation['Year'] = pd.to_datetime(df['Year'], format='%Y')
+# ventilation['Year'] = df['Year'].astype(int)
 # Sidebar
-st.sidebar.header("Filtrer par année")
-min_year, max_year = df['Year'].min(), df['Year'].max()
-selected_years = st.sidebar.slider("Sélectionner une plage d'années", min_year, max_year, (min_year, max_year), 1)
-filtered_data = df[(df['Year'] >= selected_years[0]) & (df['Year'] <= selected_years[1])]
+# Extraire l'année en int pour le slider
+min_year = df['Year'].dt.year.min()
+max_year = df['Year'].dt.year.max()
+selected_years = st.sidebar.slider(
+    "Sélectionner une plage d'années", 
+    int(min_year), int(max_year), (int(min_year), int(max_year)), 1
+)
+filtered_data = df[
+    (df['Year'] >= pd.to_datetime(selected_years[0], format='%Y')) & 
+    (df['Year'] <= pd.to_datetime(selected_years[1], format='%Y'))
+]
 filtered_data.dropna(inplace=True)
+
 # Titre
 st.title("Analyse de la croissance économique")
 st.write("")
@@ -114,6 +137,7 @@ with st.container():
     """,
     unsafe_allow_html=True
 )
+
     with col2:
         change_current = df['Taux de change officiel'].dropna().iloc[-1]
         change_previous = df['Taux de change officiel'].dropna().iloc[-2]
@@ -128,6 +152,7 @@ with st.container():
     """,
     unsafe_allow_html=True
 )
+
     with col3:
         infllation = df['Inflation'].dropna().iloc[-1] 
         infllation_current = df['Inflation'].dropna().iloc[-1]
@@ -148,6 +173,8 @@ with st.container():
         pib_previous = df['PIB'].dropna().iloc[-2]
         year_current = df['Year'].dropna().iloc[-1]
         year_previous = df['Year'].dropna().iloc[-2]
+        year_previous = year_previous.year  # Extraire seulement l'année
+        year_current = year_current.year
         difference_pib = pib_current - pib_previous
         growth_percentage = ((difference_pib) / pib_previous) * 100
         text_color = "green" if growth_percentage >= 0 else "red"
@@ -155,6 +182,7 @@ with st.container():
         st.markdown(
     f"""
     <div style="background-color: white; padding: 10px; border-radius: 5px; text-align: center; box-shadow: 0px 4px 6px rgba(0,0,0,0.3);">
+        <span style="color: black; font-size: 20px;">difference entre{year_previous} et {year_current}</span><br>
         <span style="color: black; font-size: 20px;">PIB actuel</span><br>
         <span style="color: {text_color}; font-size: 24px; font-weight: bold;">{sign} {growth_percentage:.2f}%</span>
     </div>
@@ -181,7 +209,6 @@ latest_data = filtered_data[filtered_data['Year'] == latest_year]
 
 # Prévions futures
 future_years = np.array(range(max_year + 1, max_year + 10)).reshape(-1, 1)
-
 def forecast_trend(variable):
     """Prévoit la tendance d'une variable économique en utilisant une régression linéaire."""
     years = filtered_data['Year'].values.reshape(-1, 1)
@@ -197,13 +224,15 @@ def forecast_trend(variable):
 variables = ['Exportations', 'PIB par habitant', 'Participation au marché du travail', 'Taux de change officiel', 'Dépenses publiques', 'Chômage', 'Investissements directs étrangers entrées nettes', 'Investissements directs étrangers sortie nettes']
 future_exog = pd.DataFrame({var: forecast_trend(var) for var in variables})
 future_forecast = rf_reg.predict(future_exog)
-
+st.write(future_forecast)
 # forecast_df = pd.DataFrame({'Year': future_years.flatten(), 'Prévision PIB': future_forecast})
+
 forecast_df = pd.DataFrame({
     'Year': list(filtered_data['Year']) + list(future_years.flatten()),
     'PIB': list(filtered_data['PIB']) + [np.nan] * len(future_years), 
     'Prévision PIB': list(filtered_data['Prévision PIB']) + list(future_forecast) 
 })
+forecast_df['Year'] = pd.to_datetime(forecast_df['Year'], format='%Y').dt.year
 st.write("")
 st.write("")
 col1, col2 = st.columns(2)
@@ -243,11 +272,32 @@ with col1:
     colors = ['#00FFFF', '#FCA311']
     ax1.pie(values, labels=labels, autopct='%1.1f%%', startangle=90, colors=colors)
     ax1.axis('equal') 
-    st.pyplot(fig1)    
+    st.pyplot(fig1)
+    
+    # st.subheader("Investissements Directs")
+    # labels = ["Entrées Nettes", "Sorties Nettes"]
+    # values = [investment_entries, investment_exits]
+    # colors = ["#00FFFF", "#FCA311"]
+    # fig = go.Figure()
+    # fig.add_trace(go.Pie(
+    #     labels=labels, 
+    #     values=values, 
+    #     marker=dict(colors=colors),
+    #     hole=0.3,
+    #     pull=[0.05, 0],  # Légère séparation d'un segment pour l'accentuer
+    #     textinfo="label+percent",
+    #     insidetextorientation="radial"
+    # ))
+    # fig.update_layout(
+    #     title="Répartition des Investissements Directs",
+    #     width=450,  # Largeur réduite
+    #     height=350  # Hauteur réduite
+    # )
+    # st.plotly_chart(fig)
 with col2:
     st.subheader("Marché du Travail")
     fig2, ax2 = plt.subplots(figsize=(3, 2))  
-    ax2.bar(["Chômage", "Participation"], [unemployment, labor_participation], color=['#FCA311', '#00FFFF'], width=0.5)  
+    ax2.bar(["Chômage", "Participation"], [unemployment, labor_participation], color=['#FCA311', '#00FFFF'], width=0.5)  # Ajuster la largeur ici
     ax2.set_ylim(0, 100)  
     ax2.set_ylabel("Taux (%)")
     st.pyplot(fig2)
@@ -255,13 +305,14 @@ with col3:
     st.subheader("Commerce")
     fig2, ax2 = plt.subplots(figsize=(3, 2))
     labels = ["Exportations", "Importations"]
-    ax2.bar(labels, [exportation, importation], color=['#FCA311', '#00FFFF'], width=0.5)  
+    ax2.bar(labels, [exportation, importation], color=['#FCA311', '#00FFFF'], width=0.5)  # Ajuster la largeur ici
     ax2.set_ylim(0, 100)  
     ax2.set_ylabel('Valeur')
     st.pyplot(fig2)
 
-df_depenses['Decade'] = (df_depenses['Year'] // 10) * 10
-df_recettes['Decade'] = (df_recettes['Year'] // 10) * 10
+df_depenses['Decade'] = (df_depenses['Year'].dt.year // 10) * 10
+df_recettes['Decade'] = (df_recettes['Year'].dt.year // 10) * 10
+
 df_grouped_depenses = df_depenses.groupby('Decade')[list(indicators_depenses.values())].mean().reset_index()
 df_grouped_recettes = df_recettes.groupby('Decade')[list(indicators_recettes.values())].mean().reset_index()
 df_grouped_depenses.fillna(0, inplace=True)
@@ -269,7 +320,6 @@ df_grouped_recettes.fillna(0, inplace=True)
 
 st.write("")
 st.write("")
-
 col1, col2 = st.columns(2)
 with col1:
     st.subheader("Répartition des types de dépenses")
@@ -299,11 +349,29 @@ with col2:
         ax.set_title(f"Répartition des types de recettes dans les années {selected_decade_recettes}")
         ax.grid(axis='x')
         st.pyplot(fig)
-#Ventilation
+
+# Visualisation des tendances
+# fig = px.line(ventilation, x="Year", y=ventilation.columns[1:], title="Évolution des dépenses publiques par catégorie",
+#               labels={"value": "% des dépenses", "variable": "Catégorie"})
+# st.plotly_chart(fig, use_container_width=True)
 st.write("")
 st.write("")
 st.subheader("Ventilation des Dépenses")
-selected_year = st.slider("Sélectionnez une année :", min_value=ventilation["Year"].min(), max_value=df["Year"].max(), value=ventilation["Year"].max())
+selected_year = st.slider(
+    "Sélectionnez une année :", 
+    min_value=int(ventilation["Year"].dt.year.min()), 
+    max_value=int(df["Year"].dt.year.max()), 
+    value=int(ventilation["Year"].dt.year.max())
+)
+
+# Filtrage des données en fonction de l'année sélectionnée
+# ventilation_filtered = ventilation[ventilation["Year"] == selected_year]
+    # df_melted = ventilation_filtered.melt(id_vars=["Year"], var_name="Catégorie", value_name="Valeur")
+    # fig_bar = px.bar(df_melted, x="Year", y="Valeur", color="Catégorie", 
+    #                  title=f"Répartition des dépenses publiques en {selected_year}",
+    #                  labels={"Valeur": "% des dépenses"},
+    #                  barmode="stack")
+    # st.plotly_chart(fig_bar, use_container_width=True)
 col1, col2 = st.columns([2.7, 1.3])
 with col1:
     df_melted = ventilation.melt(id_vars=["Year"], var_name="Catégorie", value_name="Valeur")
@@ -313,7 +381,7 @@ with col1:
                  barmode="stack")
     st.plotly_chart(fig_bar, use_container_width=True)
 with col2:
-    df_sunburst = ventilation[ventilation["Year"] == selected_year].melt(id_vars=["Year"], var_name="Secteur", value_name="Montant")
+    df_sunburst = ventilation[ventilation["Year"].dt.year == selected_year].melt(id_vars=["Year"], var_name="Secteur", value_name="Montant")
     df_sunburst["Catégorie"] = "Dépenses Publiques"
     fig_sunburst = px.sunburst(df_sunburst, path=["Catégorie", "Secteur"], 
                            values="Montant",
