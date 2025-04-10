@@ -74,7 +74,7 @@ df_depenses = wbdata.get_dataframe(indicators_depenses, country="MDG")
 df_depenses.reset_index(inplace=True)
 df_depenses.rename(columns={'date': 'Year'}, inplace=True)
 df_depenses = df_depenses.dropna(subset=[ "Dépenses publiques","Rémunération des employés","Dépenses nationales brutes","Dépenses de consommation finale"], how='all')
-df_depenses['Year'] = df['Year'].apply(lambda x: int(x.replace("YR", "")) if isinstance(x, str) else x)
+df_depenses['Year'] = df_depenses['Year'].apply(lambda x: int(x.replace("YR", "")) if isinstance(x, str) else x)
 
 df_recettes = wbdata.get_dataframe(indicators_recettes, country="MDG")
 df_recettes.reset_index(inplace=True)
