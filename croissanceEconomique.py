@@ -90,7 +90,7 @@ filtered_data = df[(df['Year'] >= selected_years[0]) & (df['Year'] <= selected_y
 filtered_data.dropna(inplace=True)
 
 # Titre
-st.title("Analyse de la croissance économique")
+st.title("Analyse de la croissance économiquess")
 st.write("")
 
 # Affichage des données filtrées pour l'analyse
