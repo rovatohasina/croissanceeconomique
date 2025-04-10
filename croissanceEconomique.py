@@ -66,7 +66,8 @@ indicators_recettes = {
 df = wbdata.get_dataframe(indicators, country="MDG")
 df.reset_index(inplace=True)
 df.rename(columns={'date': 'Year'}, inplace=True)
-df = df.dropna(axis=0, how='any')
+df = df.dropna(subset=indicators, how='all')
+
 df['Year'] = df['Year'].apply(lambda x: int(x.replace("YR", "")) if isinstance(x, str) else x)
 # Inverse l'ordre des lignes
 df = df.iloc[::-1]  
