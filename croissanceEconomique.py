@@ -66,7 +66,7 @@ indicators_recettes = {
 df = wbdata.get_dataframe(indicators, country="MDG")
 df.reset_index(inplace=True)
 df.rename(columns={'date': 'Year'}, inplace=True)
-df = df.dropna(subset=['Exportations', 'PIB par habitant', 'Participation au marché du travail', 'Taux de change officiel', 'Dépenses publiques', 'Chômage', 'Investissements directs étrangers entrées nettes', 'Investissements directs étrangers sortie nettes'], how='any')
+df = df.dropna(subset=['PIB','Exportations', 'PIB par habitant', 'Participation au marché du travail', 'Taux de change officiel', 'Dépenses publiques', 'Chômage', 'Investissements directs étrangers entrées nettes', 'Investissements directs étrangers sortie nettes'], how='any')
 df['Year'] = df['Year'].apply(lambda x: int(x.replace("YR", "")) if isinstance(x, str) else x)
 
 df_depenses = wbdata.get_dataframe(indicators_depenses, country="MDG")
@@ -153,7 +153,7 @@ with st.container():
         st.markdown(
     f"""
     <div style="background-color: white; padding: 10px; border-radius: 5px; text-align: center; box-shadow: 0px 4px 6px rgba(0,0,0,0.3);">
-                 <span style="color: black; font-size: 20px;">difference entre{year_previous} et {year_current}</span><br>
+                 
 
         <span style="color: black; font-size: 20px;">PIB actuel</span><br>
         <span style="color: {text_color}; font-size: 24px; font-weight: bold;">{sign} {growth_percentage:.2f}%</span>
