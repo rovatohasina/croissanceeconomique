@@ -79,17 +79,19 @@ df_depenses['Year'] = df_depenses['Year'].apply(lambda x: int(x.replace("YR", ""
 df_recettes = wbdata.get_dataframe(indicators_recettes, country="MDG")
 df_recettes.reset_index(inplace=True)
 df_recettes.rename(columns={'date': 'Year'}, inplace=True)
-df_recettes['Year'] = df['Year'].apply(lambda x: int(x.replace("YR", "")) if isinstance(x, str) else x)
+df_recettes = df_recettes.dropna(subset=["Recettes fiscales","Recettes, hors subventions","Impôts sur le revenu"], how='all')
+df_recettes['Year'] = df_recettes['Year'].apply(lambda x: int(x.replace("YR", "")) if isinstance(x, str) else x)
 
 ventilation = wbdata.get_dataframe(indicators_ventilation_depenses, country="MDG") 
 ventilation.reset_index(inplace=True)
 ventilation.rename(columns={'date': 'Year'}, inplace=True)
-ventilation['Year'] = df['Year'].astype(int)
+ventilation = ventilation.dropna(subset=["Paiements d'intérêts","Dépenses militaires","Dépenses de santé","Dépenses publiques d'éducation","Dépenses courantes d'éducation",], how='all')
+ventilation['Year'] = ventilation['Year'].astype(int)
 # Sidebar
 st.sidebar.header("Filtrer par année")
-min_year, max_year = df['Year'].min(), df['Year'].max()
+min_year, max_year = ventilation['Year'].min(), ventilation['Year'].max()
 selected_years = st.sidebar.slider("Sélectionner une plage d'années", min_year, max_year, (min_year, max_year), 1)
-filtered_data = df[(df['Year'] >= selected_years[0]) & (df['Year'] <= selected_years[1])]
+filtered_data = ventilation[(ventilation['Year'] >= selected_years[0]) & (ventilation['Year'] <= selected_years[1])]
 filtered_data.dropna(inplace=True)
 # Titre
 st.title("Analyse de la croissance économique")
