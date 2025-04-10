@@ -63,14 +63,11 @@ indicators_recettes = {
 }
 
 # Récupération des données
-@st.cache_data
-def get_data():
-    df = wbdata.get_dataframe(indicators, country="MDG")
-    df.reset_index(inplace=True)
-    df.rename(columns={'date': 'Year'}, inplace=True)
-    df['Year'] = df['Year'].apply(lambda x: int(x.replace("YR", "")) if isinstance(x, str) else x)
-    return df
-df = get_data()
+df = wbdata.get_dataframe(indicators, country="MDG")
+df.reset_index(inplace=True)
+df.rename(columns={'date': 'Year'}, inplace=True)
+df['Year'] = df['Year'].apply(lambda x: int(x.replace("YR", "")) if isinstance(x, str) else x)
+
 # Inverse l'ordre des lignes
 # df = df.iloc[::-1]  
 
