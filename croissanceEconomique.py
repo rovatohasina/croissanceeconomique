@@ -223,7 +223,6 @@ with col2:
 # Graphique des prévisions
     st.subheader("Evolution du PIB de Madagascar")
     plt.figure(figsize=(10, 5))
-    # plt.plot(filtered_data['Year'], filtered_data['PIB'])
     plt.plot(forecast_df['Year'], forecast_df['Prévision PIB'], linestyle='-', color='blue')
     plt.title('Prévision du PIB')
     plt.xlabel('Année')
