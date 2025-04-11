@@ -233,7 +233,7 @@ with col2:
     plt.legend()
     plt.grid(True)
     st.pyplot(plt)
-if not filtered_data.empty:
+if not latest_data.empty:
     # Récupération des valeurs
     investment_entries = latest_data['Investissements directs étrangers entrées nettes'].values[0]
     investment_exits = latest_data['Investissements directs étrangers sortie nettes'].values[0]
@@ -245,6 +245,13 @@ if not filtered_data.empty:
 st.write("")
 st.write("")
 
+    # Calculer les valeurs pour les graphiques
+investment_entries = filtered_data['Investissements directs étrangers entrées nettes'].sum()  # Remplacez par la colonne appropriée
+investment_exits = filtered_data['Investissements directs étrangers sortie nettes'].sum()  # Remplacez par la colonne appropriée
+unemployment = filtered_data['Chômage'].sum()  # Taux de chômage moyen dans la période sélectionnée
+labor_participation = filtered_data['Participation au marché du travail'].sum()  # Taux de participation moyen
+exportation = filtered_data['Exportations'].sum()  # Somme des exportations
+importation = filtered_data['Importations'].sum()  # Somme des importations
 col1, col2, col3 = st.columns(3)
 with col1:
     st.subheader("Investissements Directs")
