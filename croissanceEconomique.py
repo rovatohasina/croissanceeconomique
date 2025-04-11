@@ -235,15 +235,16 @@ with col2:
     st.pyplot(plt)
 if not filtered_data.empty:
     # Récupération des valeurs
-    investment_entries = filtered_data['Investissements directs étrangers entrées nettes'].values[0]
-    investment_exits = filtered_data['Investissements directs étrangers sortie nettes'].values[0]
-    unemployment = filtered_data['Chômage'].values[0]
-    labor_participation = filtered_data['Participation au marché du travail'].values[0]
-    exportation = filtered_data['Exportations'].values[0]
-    importation = filtered_data['Importations'].values[0]
+    investment_entries = latest_data['Investissements directs étrangers entrées nettes'].values[0]
+    investment_exits = latest_data['Investissements directs étrangers sortie nettes'].values[0]
+    unemployment = latest_data['Chômage'].values[0]
+    labor_participation = latest_data['Participation au marché du travail'].values[0]
+    exportation = latest_data['Exportations'].values[0]
+    importation = latest_data['Importations'].values[0]
 
 st.write("")
 st.write("")
+
 col1, col2, col3 = st.columns(3)
 with col1:
     st.subheader("Investissements Directs")
