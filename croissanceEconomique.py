@@ -111,8 +111,8 @@ st.title("Analyse de la croissance économique")
 with st.container():
     col1, col2, col3, col4 = st.columns(4)
     with col1:
-        pib__hab_current = df['PIB par habitant'].dropna().iloc[-1]
-        pib_hab_previous = df['PIB par habitant'].dropna().iloc[-2]
+        pib__hab_current = filtered_data['PIB par habitant'].dropna().iloc[-1]
+        pib_hab_previous = filtered_data['PIB par habitant'].dropna().iloc[-2]
         difference_pib_hab = pib__hab_current - pib_hab_previous
         pib_hab_percentage = ((difference_pib_hab) / pib_hab_previous)*100
         st.markdown(
@@ -125,8 +125,8 @@ with st.container():
     unsafe_allow_html=True
 )
     with col2:
-        change_current = df['Taux de change officiel'].dropna().iloc[-1]
-        change_previous = df['Taux de change officiel'].dropna().iloc[-2]
+        change_current = filtered_data['Taux de change officiel'].dropna().iloc[-1]
+        change_previous = filtered_data['Taux de change officiel'].dropna().iloc[-2]
         difference_change = change_current - change_previous
         change_percentage = ((difference_change) / change_previous)*100
         st.markdown(
@@ -139,9 +139,9 @@ with st.container():
     unsafe_allow_html=True
 )
     with col3:
-        infllation = df['Inflation'].dropna().iloc[-1] 
-        infllation_current = df['Inflation'].dropna().iloc[-1]
-        infllation_previous = df['Inflation'].dropna().iloc[-2]
+        infllation = filtered_data['Inflation'].dropna().iloc[-1] 
+        infllation_current = filtered_data['Inflation'].dropna().iloc[-1]
+        infllation_previous = filtered_data['Inflation'].dropna().iloc[-2]
         difference_infllation = infllation_current - infllation_previous
         infllation_percentage = ((difference_infllation) / infllation_previous)*100
         st.markdown(
@@ -154,10 +154,10 @@ with st.container():
     unsafe_allow_html=True
 )
     with col4:
-        pib_current = df['PIB'].dropna().iloc[-1]
-        pib_previous = df['PIB'].dropna().iloc[-2]
-        year_current = df['Year'].dropna().iloc[-1]
-        year_previous = df['Year'].dropna().iloc[-2]
+        pib_current = filtered_data['PIB'].dropna().iloc[-1]
+        pib_previous = filtered_data['PIB'].dropna().iloc[-2]
+        year_current = filtered_data['Year'].dropna().iloc[-1]
+        year_previous = filtered_data['Year'].dropna().iloc[-2]
         difference_pib = pib_current - pib_previous
         growth_percentage = ((difference_pib) / pib_previous) * 100
         text_color = "green" if growth_percentage >= 0 else "red"
