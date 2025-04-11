@@ -25,6 +25,13 @@ st.markdown(
         .stTitle {
             color: white;
         }
+        .st-emotion-cache-t74pzu {
+            width: calc(50% - 1rem);
+            flex: 1 1 calc(50% - 1rem);
+            background-color: white;
+            padding: 16px;
+            border-radius: 16px;
+}
     </style>
     """,
     unsafe_allow_html=True
@@ -70,6 +77,7 @@ df = df.dropna(subset=['PIB','Exportations', 'PIB par habitant', 'Participation 
 df['Year'] = df['Year'].apply(lambda x: int(x.replace("YR", "")) if isinstance(x, str) else x)
 # df.fillna(df.mean(), inplace=True)
 df.fillna(0, inplace=True)
+
 df_depenses = wbdata.get_dataframe(indicators_depenses, country="MDG")
 df_depenses.reset_index(inplace=True)
 df_depenses.rename(columns={'date': 'Year'}, inplace=True)
