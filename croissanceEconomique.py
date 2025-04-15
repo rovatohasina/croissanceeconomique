@@ -75,8 +75,10 @@ df.reset_index(inplace=True)
 df.rename(columns={'date': 'Year'}, inplace=True)
 df = df.dropna(subset=['PIB','Exportations', 'PIB par habitant', 'Participation au marché du travail', 'Taux de change officiel', 'Dépenses publiques', 'Chômage', 'Investissements directs étrangers entrées nettes', 'Investissements directs étrangers sortie nettes'], how='all')
 df['Year'] = df['Year'].apply(lambda x: int(x.replace("YR", "")) if isinstance(x, str) else x)
-# df.fillna(df.mean(), inplace=True)
-df.fillna(0, inplace=True)
+
+# completer les valeurs Nan
+df.fillna(method='bfill', inplace=True)
+df.fillna(method='ffill', inplace=True)
 
 df_depenses = wbdata.get_dataframe(indicators_depenses, country="MDG")
 df_depenses.reset_index(inplace=True)
@@ -247,14 +249,20 @@ st.write("")
 
 col1, col2, col3 = st.columns(3)
 with col1:
+    # st.subheader("Investissements Directs")
+    # fig1, ax1 = plt.subplots(figsize=(3, 3)) 
+    # labels = ["Entrées Nettes", "Sorties Nettes"]
+    # values = [investment_entries, investment_exits]
+    # colors = ['#00FFFF', '#FCA311']
+    # ax1.pie(values, labels=labels, autopct='%1.1f%%', startangle=90, colors=colors)
+    # ax1.axis('equal') 
+    # st.pyplot(fig1) 
     st.subheader("Investissements Directs")
-    fig1, ax1 = plt.subplots(figsize=(3, 3)) 
-    labels = ["Entrées Nettes", "Sorties Nettes"]
-    values = [investment_entries, investment_exits]
-    colors = ['#00FFFF', '#FCA311']
-    ax1.pie(values, labels=labels, autopct='%1.1f%%', startangle=90, colors=colors)
-    ax1.axis('equal') 
-    st.pyplot(fig1)    
+    fig2, ax2 = plt.subplots(figsize=(3, 2))  
+    ax2.bar(["Entrées Nettes", "Sorties Nettes"], [investment_entries, investment_exits], color=['#FCA311', '#00FFFF'], width=0.5)  
+    ax2.set_ylim(0, 100)  
+    ax2.set_ylabel("Taux (%)")
+    st.pyplot(fig2)   
 with col2:
     st.subheader("Marché du Travail")
     fig2, ax2 = plt.subplots(figsize=(3, 2))  
