@@ -10,7 +10,7 @@ from sklearn.linear_model import LinearRegression
 import plotly.express as px
 
 st.set_page_config(page_title="Prévision du PIB", layout="wide", initial_sidebar_state="expanded")
-st.markdown(
+st.markdown( 
     """
     <style>
         body {
@@ -79,7 +79,8 @@ df['Year'] = df['Year'].apply(lambda x: int(x.replace("YR", "")) if isinstance(x
 # completer les valeurs Nan
 df.fillna(method='bfill', inplace=True)
 df.fillna(method='ffill', inplace=True)
-
+#reverser les donnees
+df = df.iloc[::-1]
 df_depenses = wbdata.get_dataframe(indicators_depenses, country="MDG")
 df_depenses.reset_index(inplace=True)
 df_depenses.rename(columns={'date': 'Year'}, inplace=True)
