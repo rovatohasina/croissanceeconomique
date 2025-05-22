@@ -111,57 +111,125 @@ st.title("Analyse de la croissance économique")
 
 
 # Mise en page avec les valeurs en pourcentage
+year_current = selected_years[1]
+year_previous = year_current - 1
+st.write("")
+
+# Fonction pour l'analyse
+def analyser_evolution(pourcentage, seuil=1.0):
+    if pourcentage > seuil:
+        return "En augmentation"
+    elif pourcentage < -seuil:
+        return "En légère baisse"
+    else:
+        return "Stable"
+
+def analyser_balance(export, import_):
+    if import_ > export:
+        return "Déficit commercial"
+    elif export > import_:
+        return "Excédent commercial"
+    else:
+        return "Équilibre"
+      
+pib_current = filtered_data['PIB'].dropna().iloc[-1]
+pib_previous = filtered_data['PIB'].dropna().iloc[-2]
+difference_pib = pib_current - pib_previous
+pib_percentage = ((difference_pib) / pib_previous)*100
+
+pib_hab_current = filtered_data['PIB par habitant'].dropna().iloc[-1]
+pib_hab_previous = filtered_data['PIB par habitant'].dropna().iloc[-2]
+difference_pib_hab = pib_hab_current - pib_hab_previous
+pib_hab_percentage = ((difference_pib_hab) / pib_hab_previous)*100
+
+export_current = filtered_data['Exportations'].dropna().iloc[-1]
+export_previous = filtered_data['Exportations'].dropna().iloc[-2]
+difference_export = export_current - export_previous
+export_percentage = ((difference_export) / export_previous)*100
+
+import_current = filtered_data['Importations'].dropna().iloc[-1]
+import_previous = filtered_data['Importations'].dropna().iloc[-2]
+difference_import = import_current - import_previous
+import_percentage = ((difference_import) / import_previous)*100
+
+infllation_current = filtered_data['Inflation'].dropna().iloc[-1]
+infllation_previous = filtered_data['Inflation'].dropna().iloc[-2]
+difference_infllation = infllation_current - infllation_previous
+infllation_percentage = ((difference_infllation) / infllation_previous)*100
+
+change_current = filtered_data['Taux de change officiel'].dropna().iloc[-1]
+change_previous = filtered_data['Taux de change officiel'].dropna().iloc[-2]
+difference_change = change_current - change_previous
+change_percentage = ((difference_change) / change_previous)*100
+
+chomage_current = filtered_data['Chômage'].dropna().iloc[-1]
+chomage_previous = filtered_data['Chômage'].dropna().iloc[-2]
+difference_chomage = chomage_current - chomage_previous
+chomage_percentage = ((difference_chomage) / chomage_previous)*100
+
+participation_current = filtered_data['Participation au marché du travail'].dropna().iloc[-1]
+participation_previous = filtered_data['Participation au marché du travail'].dropna().iloc[-2]
+difference_participation = participation_current - participation_previous
+participation_percentage = ((difference_participation) / participation_previous)*100
+
+sortie_current = filtered_data['Investissements directs étrangers sortie nettes'].dropna().iloc[-1]
+sortie_previous = filtered_data['Investissements directs étrangers sortie nettes'].dropna().iloc[-2]
+difference_sortie = sortie_current - sortie_previous
+sortie_percentage = ((difference_sortie) / sortie_previous)*100
+
+entre_current = filtered_data['Investissements directs étrangers entrées nettes'].dropna().iloc[-1]
+entre_previous = filtered_data['Investissements directs étrangers entrées nettes'].dropna().iloc[-2]
+difference_entre = entre_current - entre_previous
+entre_percentage = ((difference_entre) / entre_previous)*100
+
+# Analyse balance commerciale
+balance_commerciale = analyser_balance(export_current, import_current)
+# balance_commerciale = "Déficit commercial" if import_current > export_current else "Excédent commercial"
+
+df_indicateurs = pd.DataFrame({
+    "Indicateur": ["PIB", "PIB par habitant", "Exportations", "Importations","Inflation","Taux de change officiel","Chômage","Participation au marché du travail","Investissements directs étrangers sortie nettes","Investissements directs étrangers entrées nettes"],
+    f"Valeur en {year_current}": [
+        f"{pib_current:,.2f}",
+        f"{pib_hab_current:,.2f}",
+        f"{export_current:,.2f}",
+        f"{import_current:,.2f}",
+        f"{infllation_current:,.2}",
+        f"{change_current:,.2f}",
+        f"{chomage_current:,.2f}",
+        f"{participation_current:,.2f}",
+        f"{sortie_current:,.2f}",
+        f"{entre_current:,.2f}"
+    ],
+    "Évolution par rapport à " f"{year_previous}": [
+        f"{pib_percentage:.2f}%",
+        f"{pib_hab_percentage:.2f}%",
+        f"{export_percentage:.2f}%",
+        f"{import_percentage:.2f}%",
+        f"{infllation_percentage:.2f}%",
+        f"{change_percentage:.2f}%",
+        f"{chomage_percentage:.2f}%",
+        f"{participation_percentage:.2f}%",
+        f"{sortie_percentage:.2f}%",
+        f"{entre_percentage:.2f}%"
+    ],
+        "Analyse de l'évolution": [
+        analyser_evolution(pib_percentage),
+        analyser_evolution(pib_hab_percentage),
+        analyser_evolution(export_percentage),
+        f"{analyser_evolution(import_percentage)} — {balance_commerciale}",
+        analyser_evolution(infllation_percentage),
+        analyser_evolution(change_percentage),
+        analyser_evolution(chomage_percentage),
+        analyser_evolution(participation_percentage),
+        analyser_evolution(sortie_percentage),
+        analyser_evolution(entre_percentage)
+    ]
+})
+
+# Mise en page avec les valeurs en pourcentage
 with st.container():
-    col1, col2, col3, col4 = st.columns(4)
+    col1, col2 = st.columns([1, 3])
     with col1:
-        pib__hab_current = filtered_data['PIB par habitant'].dropna().iloc[-1]
-        pib_hab_previous = filtered_data['PIB par habitant'].dropna().iloc[-2]
-        difference_pib_hab = pib__hab_current - pib_hab_previous
-        pib_hab_percentage = ((difference_pib_hab) / pib_hab_previous)*100
-        st.markdown(
-    f"""
-    <div style="background-color: white; padding: 10px; border-radius: 5px; text-align: center;box-shadow: 0px 4px 6px rgba(0,0,0,0.3);">
-        <span style="color: black; font-size: 20px;">PIB par habitant</span><br>
-        <span style="color: black; font-size: 24px; font-weight: bold;">{pib_hab_percentage:.2f}%</span>
-    </div>
-    """,
-    unsafe_allow_html=True
-)
-    with col2:
-        change_current = filtered_data['Taux de change officiel'].dropna().iloc[-1]
-        change_previous = filtered_data['Taux de change officiel'].dropna().iloc[-2]
-        difference_change = change_current - change_previous
-        change_percentage = ((difference_change) / change_previous)*100
-        st.markdown(
-    f"""
-    <div style="background-color: white; padding: 10px; border-radius: 5px; text-align: center;box-shadow: 0px 4px 6px rgba(0,0,0,0.3);">
-        <span style="color: black; font-size: 20px;">Taux de change</span><br>
-        <span style="color: black; font-size: 24px; font-weight: bold;">{change_percentage:.2f}%</span>
-    </div>
-    """,
-    unsafe_allow_html=True
-)
-    with col3:
-        infllation = filtered_data['Inflation'].dropna().iloc[-1] 
-        infllation_current = filtered_data['Inflation'].dropna().iloc[-1]
-        infllation_previous = filtered_data['Inflation'].dropna().iloc[-2]
-        difference_infllation = infllation_current - infllation_previous
-        infllation_percentage = ((difference_infllation) / infllation_previous)*100
-        st.markdown(
-    f"""
-    <div style="background-color: white; padding: 10px; border-radius: 5px; text-align: center;box-shadow: 0px 4px 6px rgba(0,0,0,0.3);">
-        <span style="color: black; font-size: 20px;">Inflation</span><br>
-        <span style="color: black; font-size: 24px; font-weight: bold;">{infllation_percentage:.2f}%</span>
-    </div>
-    """,
-    unsafe_allow_html=True
-)
-    with col4:
-        pib_current = filtered_data['PIB'].dropna().iloc[-1]
-        pib_previous = filtered_data['PIB'].dropna().iloc[-2]
-        year_current = filtered_data['Year'].dropna().iloc[-1]
-        year_previous = filtered_data['Year'].dropna().iloc[-2]
-        difference_pib = pib_current - pib_previous
         growth_percentage = ((difference_pib) / pib_previous) * 100
         text_color = "green" if growth_percentage >= 0 else "red"
         sign = "↑" if growth_percentage >= 0 else "↓"
@@ -174,6 +242,41 @@ with st.container():
     """,
     unsafe_allow_html=True
 )
+        
+        st.write("")
+        st.markdown(
+    f"""
+    <div style="background-color: white; padding: 10px; border-radius: 5px; text-align: center;box-shadow: 0px 4px 6px rgba(0,0,0,0.3);">
+        <span style="color: black; font-size: 20px;">PIB par habitant</span><br>
+        <span style="color: black; font-size: 24px; font-weight: bold;">{pib_hab_percentage:.2f}%</span>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+        st.write("")
+        st.markdown(
+    f"""
+    <div style="background-color: white; padding: 10px; border-radius: 5px; text-align: center;box-shadow: 0px 4px 6px rgba(0,0,0,0.3);">
+        <span style="color: black; font-size: 20px;">Taux de change</span><br>
+        <span style="color: black; font-size: 24px; font-weight: bold;">{change_percentage:.2f}%</span>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+        st.write("")
+        st.markdown(
+    f"""
+    <div style="background-color: white; padding: 10px; border-radius: 5px; text-align: center;box-shadow: 0px 4px 6px rgba(0,0,0,0.3);">
+        <span style="color: black; font-size: 20px;">Inflation</span><br>
+        <span style="color: black; font-size: 24px; font-weight: bold;">{infllation_percentage:.2f}%</span>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
+    with col2:
+        #interface cellule
+        st.dataframe(df_indicateurs)
 
 # Prédiction et analyse
 X = filtered_data[['Exportations', 'PIB par habitant', 'Participation au marché du travail', 'Taux de change officiel', 'Dépenses publiques', 'Chômage', 'Investissements directs étrangers entrées nettes', 'Investissements directs étrangers sortie nettes']]
