@@ -468,7 +468,7 @@ def get_live_wbdata():
             values="Montant",
             title="Répartition des Dépenses Publiques",
             color="Secteur",
-            color_discrete_sequence=px.colors.qualitative.Pastel  # palette douce et lisible
+            color_discrete_sequence=px.colors.qualitative.Pastel 
         )
 
 # Personnaliser les infobulles
