@@ -73,9 +73,9 @@ def get_live_wbdata():
 # Récupération des données
     df = wbdata.get_dataframe(indicators, country="MDG")
     df.reset_index(inplace=True)
-    df.rename(columns={'date': 'Year'}, inplace=True)
+    df.rename(columns={'date': 'Année'}, inplace=True)
     df = df.dropna(subset=['PIB','Exportations', 'PIB par habitant', 'Participation au marché du travail', 'Taux de change officiel', 'Dépenses publiques', 'Chômage', 'Investissements directs étrangers entrées nettes', 'Investissements directs étrangers sortie nettes'], how='all')
-    df['Year'] = df['Year'].apply(lambda x: int(x.replace("YR", "")) if isinstance(x, str) else x)
+    df['Année'] = df['Année'].apply(lambda x: int(x.replace("YR", "")) if isinstance(x, str) else x)
 
 # completer les valeurs Nan
     df.fillna(method='bfill', inplace=True)
@@ -84,36 +84,38 @@ def get_live_wbdata():
     df = df.iloc[::-1]
     df_depenses = wbdata.get_dataframe(indicators_depenses, country="MDG")
     df_depenses.reset_index(inplace=True)
-    df_depenses.rename(columns={'date': 'Year'}, inplace=True)
+    df_depenses.rename(columns={'date': 'Année'}, inplace=True)
     df_depenses = df_depenses.dropna(subset=[ "Dépenses publiques","Rémunération des employés","Dépenses nationales brutes","Dépenses de consommation finale"], how='all')
-    df_depenses['Year'] = df_depenses['Year'].apply(lambda x: int(x.replace("YR", "")) if isinstance(x, str) else x)
+    df_depenses['Année'] = df_depenses['Année'].apply(lambda x: int(x.replace("YR", "")) if isinstance(x, str) else x)
+    df_depenses.fillna(0, inplace=True)
 
     df_recettes = wbdata.get_dataframe(indicators_recettes, country="MDG")
     df_recettes.reset_index(inplace=True)
-    df_recettes.rename(columns={'date': 'Year'}, inplace=True)
+    df_recettes.rename(columns={'date': 'Année'}, inplace=True)
     df_recettes = df_recettes.dropna(subset=["Recettes fiscales","Recettes, hors subventions","Impôts sur le revenu"], how='all')
-    df_recettes['Year'] = df_recettes['Year'].apply(lambda x: int(x.replace("YR", "")) if isinstance(x, str) else x)
+    df_recettes['Année'] = df_recettes['Année'].apply(lambda x: int(x.replace("YR", "")) if isinstance(x, str) else x)
+    df_recettes.fillna(0, inplace=True)
 
     ventilation = wbdata.get_dataframe(indicators_ventilation_depenses, country="MDG") 
     ventilation.reset_index(inplace=True)
-    ventilation.rename(columns={'date': 'Year'}, inplace=True)
+    ventilation.rename(columns={'date': 'Année'}, inplace=True)
     ventilation = ventilation.dropna(subset=["Paiements d'intérêts","Dépenses militaires","Dépenses de santé","Dépenses publiques d'éducation","Dépenses courantes d'éducation",], how='all')
-    ventilation['Year'] = ventilation['Year'].astype(int)
+    ventilation['Année'] = ventilation['Année'].apply(lambda x: int(x.replace("YR", "")) if isinstance(x, str) else x)
+    ventilation.fillna(0, inplace=True)
+    
 # Sidebar
     st.sidebar.header("Filtrer par année")
-    min_year, max_year = df['Year'].min(), df['Year'].max()
-    selected_years = st.sidebar.slider("Sélectionner une plage d'années", min_year, max_year, (min_year, max_year), 1)
-    filtered_data = df[(df['Year'] >= selected_years[0]) & (df['Year'] <= selected_years[1])]
+    min_Année, max_Année = df['Année'].min(), df['Année'].max()
+    selected_Années = st.sidebar.slider("Sélectionner une plage d'années", min_Année, max_Année, (min_Année, max_Année), 1)
+    filtered_data = df[(df['Année'] >= selected_Années[0]) & (df['Année'] <= selected_Années[1])]
     filtered_data.dropna(inplace=True)
+    
 # Titre
     st.title("Analyse de la croissance économique")
 
-
-
-
 # Mise en page avec les valeurs en pourcentage
-    year_current = selected_years[1]
-    year_previous = year_current - 1
+    Année_current = selected_Années[1]
+    Année_previous = Année_current - 1
     st.write("")
 
 # Fonction pour l'analyse
@@ -142,6 +144,16 @@ def get_live_wbdata():
     pib_hab_previous = filtered_data['PIB par habitant'].dropna().iloc[-2]
     difference_pib_hab = pib_hab_current - pib_hab_previous
     pib_hab_percentage = ((difference_pib_hab) / pib_hab_previous)*100
+    
+    infllation_current = filtered_data['Inflation'].dropna().iloc[-1]
+    infllation_previous = filtered_data['Inflation'].dropna().iloc[-2]
+    difference_infllation = infllation_current - infllation_previous
+    infllation_percentage = ((difference_infllation) / infllation_previous)*100
+
+    change_current = filtered_data['Taux de change officiel'].dropna().iloc[-1]
+    change_previous = filtered_data['Taux de change officiel'].dropna().iloc[-2]
+    difference_change = change_current - change_previous
+    change_percentage = ((difference_change) / change_previous)*100
 
     export_current = filtered_data['Exportations'].dropna().iloc[-1]
     export_previous = filtered_data['Exportations'].dropna().iloc[-2]
@@ -152,16 +164,6 @@ def get_live_wbdata():
     import_previous = filtered_data['Importations'].dropna().iloc[-2]
     difference_import = import_current - import_previous
     import_percentage = ((difference_import) / import_previous)*100
-
-    infllation_current = filtered_data['Inflation'].dropna().iloc[-1]
-    infllation_previous = filtered_data['Inflation'].dropna().iloc[-2]
-    difference_infllation = infllation_current - infllation_previous
-    infllation_percentage = ((difference_infllation) / infllation_previous)*100
-
-    change_current = filtered_data['Taux de change officiel'].dropna().iloc[-1]
-    change_previous = filtered_data['Taux de change officiel'].dropna().iloc[-2]
-    difference_change = change_current - change_previous
-    change_percentage = ((difference_change) / change_previous)*100
 
     chomage_current = filtered_data['Chômage'].dropna().iloc[-1]
     chomage_previous = filtered_data['Chômage'].dropna().iloc[-2]
@@ -189,7 +191,7 @@ def get_live_wbdata():
 
     df_indicateurs = pd.DataFrame({
         "Indicateur": ["PIB", "PIB par habitant", "Exportations", "Importations","Inflation","Taux de change officiel","Chômage","Participation au marché du travail","Investissements directs étrangers sortie nettes","Investissements directs étrangers entrées nettes"],
-        f"Valeur en {year_current}": [
+        f"Valeur en {Année_current}": [
         f"{pib_current:,.2f}",
         f"{pib_hab_current:,.2f}",
         f"{export_current:,.2f}",
@@ -201,7 +203,7 @@ def get_live_wbdata():
         f"{sortie_current:,.2f}",
         f"{entre_current:,.2f}"
     ],
-        "Évolution par rapport à " f"{year_previous}": [
+        "Évolution par rapport à " f"{Année_previous}": [
         f"{pib_percentage:.2f}%",
         f"{pib_hab_percentage:.2f}%",
         f"{export_percentage:.2f}%",
@@ -282,6 +284,7 @@ def get_live_wbdata():
         with col2:
         #interface cellule
             st.dataframe(df_indicateurs)
+            df_pivot = df_indicateurs.set_index("Indicateur").T
 
 # Prédiction et analyse
     X = filtered_data[['Exportations', 'PIB par habitant', 'Participation au marché du travail', 'Taux de change officiel', 'Dépenses publiques', 'Chômage', 'Investissements directs étrangers entrées nettes', 'Investissements directs étrangers sortie nettes']]
@@ -293,25 +296,24 @@ def get_live_wbdata():
     rf_reg.fit(X_train, y_train)
 
 # Prédictions
-    y_pred = rf_reg.predict(X_test)
     filtered_data['Prévision PIB'] = rf_reg.predict(X)
 
 # Sélection de la dernière année disponible
-    latest_year = filtered_data['Year'].max()
-    latest_data = filtered_data[filtered_data['Year'] == latest_year]
+    latest_Année = filtered_data['Année'].max()
+    latest_data = filtered_data[filtered_data['Année'] == latest_Année]
 
 # Prévions futures
-    future_years = np.array(range(max_year + 1, max_year + 10)).reshape(-1, 1)
+    future_Années = np.array(range(max_Année + 1, max_Année + 10)).reshape(-1, 1)
 
     def forecast_trend(variable):
         """Prévoit la tendance d'une variable économique en utilisant une régression linéaire."""
-        years = filtered_data['Year'].values.reshape(-1, 1)
+        Années = filtered_data['Année'].values.reshape(-1, 1)
         values = filtered_data[variable].values
         if np.isnan(values).any():
             raise ValueError(f"Des valeurs manquantes existent dans {variable}")
         model_trend = LinearRegression()
-        model_trend.fit(years, values)
-        future_values = model_trend.predict(future_years)
+        model_trend.fit(Années, values)
+        future_values = model_trend.predict(future_Années)
         noise = np.random.uniform(-0.5, 0.5, size=future_values.shape)
         return future_values + noise
 
@@ -319,10 +321,10 @@ def get_live_wbdata():
     future_exog = pd.DataFrame({var: forecast_trend(var) for var in variables})
     future_forecast = rf_reg.predict(future_exog)
 
-# forecast_df = pd.DataFrame({'Year': future_years.flatten(), 'Prévision PIB': future_forecast})
+# forecast_df = pd.DataFrame({'Année': future_Années.flatten(), 'Prévision PIB': future_forecast})
     forecast_df = pd.DataFrame({
-        'Year': list(filtered_data['Year']) + list(future_years.flatten()),
-        'PIB': list(filtered_data['PIB']) + [np.nan] * len(future_years), 
+        'Année': list(filtered_data['Année']) + list(future_Années.flatten()),
+        'PIB': list(filtered_data['PIB']) + [np.nan] * len(future_Années), 
         'Prévision PIB': list(filtered_data['Prévision PIB']) + list(future_forecast) 
     })
     st.write("")
@@ -336,8 +338,8 @@ def get_live_wbdata():
 # Graphique des prévisions
         st.subheader("Evolution du PIB de Madagascar")
         plt.figure(figsize=(10, 5))
-    # plt.plot(filtered_data['Year'], filtered_data['PIB'])
-        plt.plot(forecast_df['Year'], forecast_df['Prévision PIB'], linestyle='-', color='blue')
+    # plt.plot(filtered_data['Année'], filtered_data['PIB'])
+        plt.plot(forecast_df['Année'], forecast_df['Prévision PIB'], linestyle='-', color='blue')
         plt.title('Prévision du PIB')
         plt.xlabel('Année')
         plt.ylabel('Croissance du PIB')
@@ -381,8 +383,8 @@ def get_live_wbdata():
         ax2.set_ylabel('Valeur')
         st.pyplot(fig2)
 
-        df_depenses['Decade'] = (df_depenses['Year'] // 10) * 10
-        df_recettes['Decade'] = (df_recettes['Year'] // 10) * 10
+        df_depenses['Decade'] = (df_depenses['Année'] // 10) * 10
+        df_recettes['Decade'] = (df_recettes['Année'] // 10) * 10
         df_grouped_depenses = df_depenses.groupby('Decade')[list(indicators_depenses.values())].mean().reset_index()
         df_grouped_recettes = df_recettes.groupby('Decade')[list(indicators_recettes.values())].mean().reset_index()
         df_grouped_depenses.fillna(0, inplace=True)
@@ -402,7 +404,7 @@ def get_live_wbdata():
             fig, ax = plt.subplots(figsize=(10, 6))
             ax.barh(selected_expenses, expense_values, color=['blue', 'green', 'red', 'orange'])
             ax.set_ylabel("Type de dépense")
-            ax.set_xlabel("% du PIB")
+            ax.set_xlabel("Dépenses en moyenne")
             ax.set_title(f"Répartition des types de dépenses dans les années {selected_decade_depenses}")
             ax.grid(axis='x')
             st.pyplot(fig)
@@ -416,7 +418,7 @@ def get_live_wbdata():
             fig, ax = plt.subplots(figsize=(10, 6))
             ax.barh(selected_recettes, recette_values, color=['blue', 'green', 'red', 'orange'])
             ax.set_ylabel("Type de recette")
-            ax.set_xlabel("% du PIB")
+            ax.set_xlabel(f"Recettes en moyenne")
             ax.set_title(f"Répartition des types de recettes dans les années {selected_decade_recettes}")
             ax.grid(axis='x')
             st.pyplot(fig)
@@ -424,23 +426,72 @@ def get_live_wbdata():
     st.write("")
     st.write("")
     st.subheader("Ventilation des Dépenses")
-    selected_year = st.slider("Sélectionnez une année :", min_value=ventilation["Year"].min(), max_value=df["Year"].max(), value=ventilation["Year"].max())
+    # selected_Année = st.slider("Sélectionnez une année :", min_value=ventilation["Année"].min(), max_value=df["Année"].max(), value=ventilation["Année"].max())
+
+
     col1, col2 = st.columns([2.7, 1.3])
     with col1:
-        df_melted = ventilation.melt(id_vars=["Year"], var_name="Catégorie", value_name="Valeur")
-        fig_bar = px.bar(df_melted, x="Year", y="Valeur", 
-                    color="Catégorie", 
-                    labels={"Valeur": "% des dépenses"},
-                    barmode="stack")
-        st.plotly_chart(fig_bar, use_container_width=True)
+        min_Année_ventillation, max_Année_ventillation = ventilation['Année'].min(), ventilation['Année'].max()
+        selected_Année_ventillation = st.slider("Sélectionner une plage d'années", min_Année_ventillation, max_Année_ventillation, (min_Année_ventillation, max_Année_ventillation), 1)
+        filtered_ventillation = ventilation[(ventilation['Année'] >= selected_Année_ventillation[0]) & (ventilation['Année'] <= selected_Année_ventillation[1])]
+        filtered_ventillation.dropna(inplace=True)
+        # df_melted = ventilation.melt(id_vars=["Année"], var_name="Catégorie", value_name="Valeur")
+        # fig_bar = px.bar(df_melted, x="Année", y="Valeur", 
+        #             color="Catégorie", 
+        #             labels={"Valeur": "% des dépenses"},
+        #             barmode="stack")
+        # st.plotly_chart(fig_bar, use_container_width=True)
+        st.plotly_chart(px.line(filtered_ventillation.melt(id_vars=["Année"], var_name="Catégorie", value_name="Valeur"), x="Année", y="Valeur", color="Catégorie", labels={"Valeur": "Dépenses"}), use_container_width=True)
     with col2:
-        df_sunburst = ventilation[ventilation["Year"] == selected_year].melt(id_vars=["Year"], var_name="Secteur", value_name="Montant")
+        selected_Année = st.number_input(
+            f"Entrez une année (valeur entre {int(ventilation['Année'].min())} et {int(ventilation['Année'].max())}) :", 
+            min_value=int(ventilation["Année"].min()), 
+            max_value=int(ventilation["Année"].max()), 
+            value=int(ventilation["Année"].max()), 
+            step=1
+            )
+            # Préparer les données pour le sunburst
+        df_sunburst = ventilation[ventilation["Année"] == selected_Année].melt(
+            id_vars=["Année"], var_name="Secteur", value_name="Montant"
+        )
+        df_wide = df_sunburst.pivot(index="Année", columns="Secteur", values="Montant").reset_index()
+# Ajouter une colonne de catégorie (racine du sunburst)
         df_sunburst["Catégorie"] = "Dépenses Publiques"
-        fig_sunburst = px.sunburst(df_sunburst, path=["Catégorie", "Secteur"], 
-                            values="Montant",
-                            title="Répartition des Dépenses Publiques",
-                            color="Secteur")
-        st.plotly_chart(fig_sunburst, use_container_width=True)
-    return filtered_data, forecast_df, filtered_df_depenses, filtered_df_depenses, ventilation
 
-filtered_data, forecast_df, filtered_df_depenses, filtered_df_depenses, ventilation = get_live_wbdata()
+# Trier les secteurs par montant décroissant pour une meilleure lisibilité
+        df_sunburst = df_sunburst.sort_values(by="Montant", ascending=False)
+
+# Créer le graphique sunburst
+        fig_sunburst = px.sunburst(
+            df_sunburst,
+            path=["Catégorie", "Secteur"],
+            values="Montant",
+            title="Répartition des Dépenses Publiques",
+            color="Secteur",
+            color_discrete_sequence=px.colors.qualitative.Pastel  # palette douce et lisible
+        )
+
+# Personnaliser les infobulles
+        fig_sunburst.update_traces(
+            hovertemplate='<b>%{label}</b><br>Montant : %{value:.2f} unités<extra></extra>'
+        )
+
+# Afficher le graphique dans Streamlit
+        st.plotly_chart(fig_sunburst, use_container_width=True)
+
+# ✅ Ajouter une analyse textuelle automatique
+        top_depense = df_sunburst
+        if not df_sunburst.empty:
+    # S'assurer qu'il y a bien des données valides pour Montant
+            if df_sunburst['Montant'].notnull().any():
+                top_depense = df_sunburst.loc[df_sunburst['Montant'].idxmax()]
+                st.markdown(f"En **{selected_Année}**, la plus grande dépense publique a concerné le secteur **{top_depense['Secteur']}**, avec un montant de **{top_depense['Montant']} unités**.")
+            else:
+             st.warning(f"Aucune valeur de montant disponible pour l'année {selected_Année}.")
+        else:
+            st.warning(f"Aucune donnée pour l'année {selected_Année}.")
+
+    return df_pivot,forecast_df, filtered_df_depenses, filtered_df_recettes, filtered_ventillation,df_wide
+
+data = get_live_wbdata()
+st.write(data)
