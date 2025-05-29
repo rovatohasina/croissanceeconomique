@@ -10,32 +10,6 @@ from sklearn.linear_model import LinearRegression
 import plotly.express as px
 
 st.set_page_config(page_title="Prévision du PIB", layout="wide", initial_sidebar_state="expanded")
-st.markdown( 
-    """
-    <style>
-        body {
-            background-color: #0F4C60;
-            color: white;
-        }
-        .stApp {
-            background-color: #D3D3D3;
-        }
-         color: #FCA311;
-        # }
-        .stTitle {
-            color: white;
-        }
-        .st-emotion-cache-t74pzu {
-            width: calc(50% - 1rem);
-            flex: 1 1 calc(50% - 1rem);
-            background-color: white;
-            padding: 16px;
-            border-radius: 16px;
-}
-    </style>
-    """,
-    unsafe_allow_html=True
-)
 # Indicateurs économiques
 def get_live_wbdata():
     indicators = {
@@ -76,11 +50,9 @@ def get_live_wbdata():
     df.rename(columns={'date': 'Année'}, inplace=True)
     df = df.dropna(subset=['PIB','Exportations', 'PIB par habitant', 'Participation au marché du travail', 'Taux de change officiel', 'Dépenses publiques', 'Chômage', 'Investissements directs étrangers entrées nettes', 'Investissements directs étrangers sortie nettes'], how='all')
     df['Année'] = df['Année'].apply(lambda x: int(x.replace("YR", "")) if isinstance(x, str) else x)
-
-# completer les valeurs Nan
+    # completer les valeurs Nan
     df.fillna(method='bfill', inplace=True)
     df.fillna(method='ffill', inplace=True)
-#reverser les donnee
     df = df.iloc[::-1]
     df_depenses = wbdata.get_dataframe(indicators_depenses, country="MDG")
     df_depenses.reset_index(inplace=True)
@@ -103,22 +75,19 @@ def get_live_wbdata():
     ventilation['Année'] = ventilation['Année'].apply(lambda x: int(x.replace("YR", "")) if isinstance(x, str) else x)
     ventilation.fillna(0, inplace=True)
     
-# Sidebar
-    st.sidebar.header("Filtrer par année")
+# Titre
     min_Année, max_Année = df['Année'].min(), df['Année'].max()
     selected_Années = st.sidebar.slider("Sélectionner une plage d'années", min_Année, max_Année, (min_Année, max_Année), 1)
+    st.title("Analyse de la croissance économique")
     filtered_data = df[(df['Année'] >= selected_Années[0]) & (df['Année'] <= selected_Années[1])]
     filtered_data.dropna(inplace=True)
-    
-# Titre
-    st.title("Analyse de la croissance économique")
 
 # Mise en page avec les valeurs en pourcentage
-    Année_current = selected_Années[1]
-    Année_previous = Année_current - 1
     st.write("")
 
 # Fonction pour l'analyse
+    Année_current = selected_Années[1]
+    Année_previous = Année_current - 1
     def analyser_evolution(pourcentage, seuil=1.0):
         if pourcentage > seuil:
             return "En augmentation"
@@ -187,7 +156,6 @@ def get_live_wbdata():
 
 # Analyse balance commerciale
     balance_commerciale = analyser_balance(export_current, import_current)
-# balance_commerciale = "Déficit commercial" if import_current > export_current else "Excédent commercial"
 
     df_indicateurs = pd.DataFrame({
         "Indicateur": ["PIB", "PIB par habitant", "Exportations", "Importations","Inflation","Taux de change officiel","Chômage","Participation au marché du travail","Investissements directs étrangers sortie nettes","Investissements directs étrangers entrées nettes"],
@@ -228,63 +196,6 @@ def get_live_wbdata():
         analyser_evolution(entre_percentage)
     ]
 })
-
-# Mise en page avec les valeurs en pourcentage
-    with st.container():
-        col1, col2 = st.columns([1, 3])
-        with col1:
-            text_color = "green" if pib_percentage >= 0 else "red"
-            sign = "↑" if pib_percentage >= 0 else "↓"
-            st.markdown(
-        f"""
-        <div style="background-color: white; padding: 10px; border-radius: 5px; text-align: center; box-shadow: 0px 4px 6px rgba(0,0,0,0.3);">
-            <span style="color: black; font-size: 20px;">PIB actuel</span><br>
-            <span style="color: {text_color}; font-size: 24px; font-weight: bold;">{sign} {pib_percentage:.2f}%</span>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-            st.write("")
-            text_color = "green" if pib_hab_percentage >= 0 else "red"
-            sign = "↑" if pib_hab_percentage >= 0 else "↓"
-            st.markdown(
-        f"""
-        <div style="background-color: white; padding: 10px; border-radius: 5px; text-align: center;box-shadow: 0px 4px 6px rgba(0,0,0,0.3);">
-            <span style="color: black; font-size: 20px;">PIB par habitant</span><br>
-            <span style="color: {text_color}; font-size: 24px; font-weight: bold;">{sign} {pib_hab_percentage:.2f}%</span>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-            st.write("")
-            text_color = "green" if change_percentage >= 0 else "red"
-            sign = "↑" if change_percentage >= 0 else "↓"
-            st.markdown(
-        f"""
-        <div style="background-color: white; padding: 10px; border-radius: 5px; text-align: center;box-shadow: 0px 4px 6px rgba(0,0,0,0.3);">
-            <span style="color: black; font-size: 20px;">Taux de change</span><br>
-            <span style="color: {text_color}; font-size: 24px; font-weight: bold;">{sign} {change_percentage:.2f}%</span>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-            st.write("")
-            text_color = "green" if infllation_percentage >= 0 else "red"
-            sign = "↑" if infllation_percentage >= 0 else "↓"
-            st.markdown(
-        f"""
-        <div style="background-color: white; padding: 10px; border-radius: 5px; text-align: center;box-shadow: 0px 4px 6px rgba(0,0,0,0.3);">
-            <span style="color: black; font-size: 20px;">Inflation</span><br>
-            <span style="color: {text_color}; font-size: 24px; font-weight: bold;">{sign}  {infllation_percentage:.2f}%</span>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-        with col2:
-        #interface cellule
-            st.dataframe(df_indicateurs)
-            df_pivot = df_indicateurs.set_index("Indicateur").T
 
 # Prédiction et analyse
     X = filtered_data[['Exportations', 'PIB par habitant', 'Participation au marché du travail', 'Taux de change officiel', 'Dépenses publiques', 'Chômage', 'Investissements directs étrangers entrées nettes', 'Investissements directs étrangers sortie nettes']]
@@ -327,120 +238,188 @@ def get_live_wbdata():
         'PIB': list(filtered_data['PIB']) + [np.nan] * len(future_Années), 
         'Prévision PIB': list(filtered_data['Prévision PIB']) + list(future_forecast) 
     })
-    st.write("")
-    st.write("")
-    col1, col2 = st.columns(2)
+# Mise en page avec les valeurs en pourcentage
+    col1,col2,col3,col4=st.columns(4)
     with col1:
-    # Importance des variables
-        st.subheader("Importance des variables")
-        st.bar_chart(pd.DataFrame({'Feature': X.columns, 'Importance': rf_reg.feature_importances_}).set_index('Feature'))
+            if pib_percentage > 0:
+                text_color = "#15EE4B"  
+                sign = "↑"
+            elif pib_percentage < 0:
+                text_color = "red"
+                sign = "↓"
+            else:
+                text_color = "orange"
+                sign = ""
+            st.markdown(
+        f"""
+        <div style="background-color: #063970; padding: 10px; border-radius: 5px; text-align: center; box-shadow: 0px 4px 6px rgba(0,0,0,0.3);">
+            <span style="color: #ffffff; font-size: 20px;">PIB actuel</span><br>
+            <span style="color: {text_color}; font-size: 24px; font-weight: bold;">{sign} {pib_percentage:.2f}%</span>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
     with col2:
-# Graphique des prévisions
-        st.subheader("Evolution du PIB de Madagascar")
-        plt.figure(figsize=(10, 5))
-    # plt.plot(filtered_data['Année'], filtered_data['PIB'])
-        plt.plot(forecast_df['Année'], forecast_df['Prévision PIB'], linestyle='-', color='blue')
-        plt.title('Prévision du PIB')
-        plt.xlabel('Année')
-        plt.ylabel('Croissance du PIB')
-        plt.legend()
-        plt.grid(True)
-        st.pyplot(plt)
-    if not latest_data.empty:
-    # Récupération des valeurs
-        investment_entries = latest_data['Investissements directs étrangers entrées nettes'].values[0]
-        investment_exits = latest_data['Investissements directs étrangers sortie nettes'].values[0]
-        unemployment = latest_data['Chômage'].values[0]
-        labor_participation = latest_data['Participation au marché du travail'].values[0]
-        exportation = latest_data['Exportations'].values[0]
-        importation = latest_data['Importations'].values[0]
-
-    st.write("")
-    st.write("")
-
-    col1, col2, col3 = st.columns(3)
-    with col1: 
-    # st.pyplot(fig1) 
-        st.subheader("Investissements Directs")
-        fig2, ax2 = plt.subplots(figsize=(3, 2))  
-        ax2.bar(["Entrées Nettes", "Sorties Nettes"], [investment_entries, investment_exits], color=['#FCA311', '#00FFFF'], width=0.5)  
-        ax2.set_ylim(0, 100)  
-        ax2.set_ylabel("Taux (%)")
-        st.pyplot(fig2)   
-    with col2:
-        st.subheader("Marché du Travail")
-        fig2, ax2 = plt.subplots(figsize=(3, 2))  
-        ax2.bar(["Chômage", "Participation"], [unemployment, labor_participation], color=['#FCA311', '#00FFFF'], width=0.5)  
-        ax2.set_ylim(0, 100)  
-        ax2.set_ylabel("Taux (%)")
-        st.pyplot(fig2)
+            if pib_hab_percentage > 0:
+                text_color = "#15EE4B"
+                sign = "↑"
+            elif pib_hab_percentage < 0:
+                text_color = "red"
+                sign = "↓"
+            else:
+                text_color = "orange"
+                sign = ""
+            st.markdown(
+        f"""
+        <div style="background-color: #063970; padding: 10px; border-radius: 5px; text-align: center;box-shadow: 0px 4px 6px rgba(0,0,0,0.3);">
+            <span style="color: #ffffff; font-size: 20px;">PIB par habitant</span><br>
+            <span style="color: {text_color}; font-size: 24px; font-weight: bold;">{sign} {pib_hab_percentage:.2f}%</span>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
     with col3:
-        st.subheader("Commerce")
-        fig2, ax2 = plt.subplots(figsize=(3, 2))
-        labels = ["Exportations", "Importations"]
-        ax2.bar(labels, [exportation, importation], color=['#FCA311', '#00FFFF'], width=0.5)  
-        ax2.set_ylim(0, 100)  
-        ax2.set_ylabel('Valeur')
-        st.pyplot(fig2)
-
-        df_depenses['Decade'] = (df_depenses['Année'] // 10) * 10
-        df_recettes['Decade'] = (df_recettes['Année'] // 10) * 10
-        df_grouped_depenses = df_depenses.groupby('Decade')[list(indicators_depenses.values())].mean().reset_index()
-        df_grouped_recettes = df_recettes.groupby('Decade')[list(indicators_recettes.values())].mean().reset_index()
-        df_grouped_depenses.fillna(0, inplace=True)
-        df_grouped_recettes.fillna(0, inplace=True)
-
+            if change_percentage > 0:
+                text_color = "#15EE4B" 
+                sign = "↑"
+            elif change_percentage < 0:
+                text_color = "red"
+                sign = "↓"
+            else:
+                text_color = "orange"
+                sign = "" #→
+            st.markdown(
+        f"""
+        <div style="background-color: #063970; padding: 10px; border-radius: 5px; text-align: center;box-shadow: 0px 4px 6px rgba(0,0,0,0.3);">
+            <span style="color: #ffffff; font-size: 20px;">Taux de change</span><br>
+            <span style="color: {text_color}; font-size: 24px; font-weight: bold;">{sign} {change_percentage:.2f}%</span>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+    with col4:
+            if infllation_percentage > 0:
+                text_color = "#15EE4B"
+                sign = "↑"
+            elif infllation_percentage < 0:
+                text_color = "red"
+                sign = "↓"
+            else:
+                text_color = "orange"
+                sign = ""
+            st.markdown(
+        f"""
+        <div style="background-color: #063970; padding: 10px; border-radius: 5px; text-align: center;box-shadow: 0px 4px 6px rgba(0,0,0,0.3);">
+            <span style="color: #ffffff; font-size: 20px;">Inflation</span><br>
+            <span style="color: {text_color}; font-size: 24px; font-weight: bold;">{sign}  {infllation_percentage:.2f}%</span>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
     st.write("")
     st.write("")
+    st.write("")
+    with st.container():
+        if not latest_data.empty:
+    # Récupération des valeurs
+            unemployment = latest_data['Chômage'].values[0]
+            labor_participation = latest_data['Participation au marché du travail'].values[0]
+            exportation = latest_data['Exportations'].values[0]
+            importation = latest_data['Importations'].values[0]
+        col1, col2 = st.columns([1, 3])
+        with col1:
+            fig2, ax2 = plt.subplots(figsize=(3, 2),facecolor="#2368B3") 
+            labels = ["Chômage", "Participation"]
+            ax2.bar(labels, [unemployment, labor_participation], color=['#063970'], width=0.5)  
+            ax2.set_ylim(0, 100)  
+            ax2.set_ylabel("Taux (%)",color="#ffffff")
+            ax2.set_title("Marché du Travail",color="#ffffff")
+            ax2.set_facecolor("#2368B3")
+            ax2.tick_params(axis='y', colors='#ffffff')
+            ax2.tick_params(axis='x', colors='#ffffff')
+            st.pyplot(fig2)
+            st.write("")
+            st.write("")
+            fig2, ax2 = plt.subplots(figsize=(3, 2),facecolor="#2368B3")
+            labels = ["Exportations", "Importations"]
+            ax2.bar(labels, [exportation, importation], color=['#063970'], width=0.5)  
+            ax2.set_ylim(0, 100)  
+            ax2.set_ylabel('Valeur',color="#ffffff")
+            ax2.set_title("Commerce",color="#ffffff")
+            ax2.set_facecolor("#2368B3")
+            ax2.tick_params(axis='y', colors='#ffffff')
+            ax2.tick_params(axis='x', colors='#ffffff')
+            st.pyplot(fig2)
 
+        with col2:
+            # plt.plot(filtered_data['Année'], filtered_data['PIB'])
+            fig, ax = plt.subplots(figsize=(10, 4.8), facecolor="#2368B3")
+            ax.plot(forecast_df['Année'], forecast_df['Prévision PIB'], linestyle='-', color='#063970')
+            ax.set_title('Évolution du PIB de Madagascar et sa prévision de 10 ans', color="#ffffff")
+            ax.set_ylabel('Valeur', color="#ffffff")
+            ax.tick_params(axis='y', colors='#ffffff')
+            ax.tick_params(axis='x', colors='#ffffff')
+            ax.set_facecolor('#2368B3')
+            ax.grid(axis='y')
+            st.pyplot(fig)
+            st.write("")
+            st.write("")
+        st.subheader("Analyse de quelques indicateurs économiques")
+        st.dataframe(df_indicateurs)
+        df_pivot = df_indicateurs.set_index("Indicateur").T
+        st.write("")
+        st.write("")
+    df_depenses['Decade'] = (df_depenses['Année'] // 10) * 10
+    df_recettes['Decade'] = (df_recettes['Année'] // 10) * 10
+    df_grouped_depenses = df_depenses.groupby('Decade')[list(indicators_depenses.values())].mean().reset_index()
+    df_grouped_recettes = df_recettes.groupby('Decade')[list(indicators_recettes.values())].mean().reset_index()
+    df_grouped_depenses.fillna(0, inplace=True)
+    df_grouped_recettes.fillna(0, inplace=True)
     col1, col2 = st.columns(2)
     with col1:
-        st.subheader("Répartition des types de dépenses")
-        selected_expenses = st.multiselect("Sélectionnez les types de dépenses", list(indicators_depenses.values()), default=list(indicators_depenses.values()))
+        st.subheader("Répartition de types de dépenses")
+        selected_expenses = st.sidebar.multiselect("Sélectionnez les types de dépenses", list(indicators_depenses.values()), default=list(indicators_depenses.values()))
         selected_decade_depenses = st.selectbox("Sélectionnez une décennie pour les dépenses", sorted(df_grouped_depenses['Decade'].unique(), reverse=True))
         filtered_df_depenses = df_grouped_depenses[df_grouped_depenses['Decade'] == selected_decade_depenses][selected_expenses]
         if not filtered_df_depenses.empty:
             expense_values = filtered_df_depenses.iloc[0].values
-            fig, ax = plt.subplots(figsize=(10, 6))
-            ax.barh(selected_expenses, expense_values, color=['blue', 'green', 'red', 'orange'])
-            ax.set_ylabel("Type de dépense")
-            ax.set_xlabel("Dépenses en moyenne")
-            ax.set_title(f"Répartition des types de dépenses dans les années {selected_decade_depenses}")
+            fig, ax = plt.subplots(figsize=(10, 6),facecolor="#2368B3")
+            ax.barh(selected_expenses, expense_values, color=['#063970'])
+            ax.set_ylabel("Type de dépense",color="#ffffff")
+            ax.set_xlabel("Dépenses en moyenne",color="#ffffff")
+            ax.set_title(f"Répartition de types de dépenses dans les années {selected_decade_depenses}",color="#ffffff")
             ax.grid(axis='x')
+            ax.set_facecolor("#2368B3")
+            ax.tick_params(axis='x', colors='#ffffff')
+            ax.tick_params(axis='y', colors='#ffffff')
             st.pyplot(fig)
     with col2:
-        st.subheader("Répartition des types de recettes")
-        selected_recettes = st.multiselect("Sélectionnez les types de recettes", list(indicators_recettes.values()), default=list(indicators_recettes.values()))
+        st.subheader("Répartition de types de recettes")
+        selected_recettes = st.sidebar.multiselect("Sélectionnez les types de recettes", list(indicators_recettes.values()), default=list(indicators_recettes.values()))
         selected_decade_recettes = st.selectbox("Sélectionnez une décennie pour les recettes", sorted(df_grouped_recettes['Decade'].unique(), reverse=True))
         filtered_df_recettes = df_grouped_recettes[df_grouped_recettes['Decade'] == selected_decade_recettes][selected_recettes]
         if not filtered_df_recettes.empty:
             recette_values = filtered_df_recettes.iloc[0].values
-            fig, ax = plt.subplots(figsize=(10, 6))
-            ax.barh(selected_recettes, recette_values, color=['blue', 'green', 'red', 'orange'])
-            ax.set_ylabel("Type de recette")
-            ax.set_xlabel(f"Recettes en moyenne")
-            ax.set_title(f"Répartition des types de recettes dans les années {selected_decade_recettes}")
+            fig, ax = plt.subplots(figsize=(10, 6),facecolor="#2368B3")
+            ax.barh(selected_recettes, recette_values, color=['#063970'])
+            ax.set_ylabel("Type de recette",color="#ffffff")
+            ax.set_xlabel(f"Recettes en moyenne",color="#ffffff")
+            ax.set_title(f"Répartition de types de recettes dans les années {selected_decade_recettes}",color="#ffffff")
             ax.grid(axis='x')
+            ax.set_facecolor("#2368B3")
+            ax.tick_params(axis='x', colors='#ffffff')
+            ax.tick_params(axis='y', colors='#ffffff')
             st.pyplot(fig)
 #Ventilation
     st.write("")
     st.write("")
-    st.subheader("Ventilation des Dépenses")
-    # selected_Année = st.slider("Sélectionnez une année :", min_value=ventilation["Année"].min(), max_value=df["Année"].max(), value=ventilation["Année"].max())
-
-
+    st.subheader("Répartition des Dépenses Publiques")
     col1, col2 = st.columns([2.7, 1.3])
     with col1:
         min_Année_ventillation, max_Année_ventillation = ventilation['Année'].min(), ventilation['Année'].max()
         selected_Année_ventillation = st.slider("Sélectionner une plage d'années", min_Année_ventillation, max_Année_ventillation, (min_Année_ventillation, max_Année_ventillation), 1)
         filtered_ventillation = ventilation[(ventilation['Année'] >= selected_Année_ventillation[0]) & (ventilation['Année'] <= selected_Année_ventillation[1])]
         filtered_ventillation.dropna(inplace=True)
-        # df_melted = ventilation.melt(id_vars=["Année"], var_name="Catégorie", value_name="Valeur")
-        # fig_bar = px.bar(df_melted, x="Année", y="Valeur", 
-        #             color="Catégorie", 
-        #             labels={"Valeur": "% des dépenses"},
-        #             barmode="stack")
-        # st.plotly_chart(fig_bar, use_container_width=True)
         st.plotly_chart(px.line(filtered_ventillation.melt(id_vars=["Année"], var_name="Catégorie", value_name="Valeur"), x="Année", y="Valeur", color="Catégorie", labels={"Valeur": "Dépenses"}), use_container_width=True)
     with col2:
         selected_Année = st.number_input(
@@ -458,7 +437,7 @@ def get_live_wbdata():
 # Ajouter une colonne de catégorie (racine du sunburst)
         df_sunburst["Catégorie"] = "Dépenses Publiques"
 
-# Trier les secteurs par montant décroissant pour une meilleure lisibilité
+# Trier les secteurs par montant décroissant
         df_sunburst = df_sunburst.sort_values(by="Montant", ascending=False)
 
 # Créer le graphique sunburst
@@ -470,8 +449,7 @@ def get_live_wbdata():
             color="Secteur",
             color_discrete_sequence=px.colors.qualitative.Pastel 
         )
-
-# Personnaliser les infobulles
+        
         fig_sunburst.update_traces(
             hovertemplate='<b>%{label}</b><br>Montant : %{value:.2f} unités<extra></extra>'
         )
@@ -479,19 +457,18 @@ def get_live_wbdata():
 # Afficher le graphique dans Streamlit
         st.plotly_chart(fig_sunburst, use_container_width=True)
 
-# ✅ Ajouter une analyse textuelle automatique
+# Analyse textuelle automatique
         top_depense = df_sunburst
         if not df_sunburst.empty:
     # S'assurer qu'il y a bien des données valides pour Montant
             if df_sunburst['Montant'].notnull().any():
                 top_depense = df_sunburst.loc[df_sunburst['Montant'].idxmax()]
-                st.markdown(f"En **{selected_Année}**, la plus grande dépense publique a concerné le secteur **{top_depense['Secteur']}**, avec un montant de **{top_depense['Montant']} unités**.")
+                st.markdown(f"En **{selected_Année}**, la plus grande dépense publique a concerné le secteur **{top_depense['Secteur']}**, avec un montant de **{top_depense['Montant']}**.")
             else:
-             st.warning(f"Aucune valeur de montant disponible pour l'année {selected_Année}.")
+             st.warning(f"Aucune valeur disponible pour l'année {selected_Année}.")
         else:
             st.warning(f"Aucune donnée pour l'année {selected_Année}.")
 
     return df_pivot,forecast_df, filtered_df_depenses, filtered_df_recettes, filtered_ventillation,df_wide
 
 data = get_live_wbdata()
-st.write(data)
