@@ -384,9 +384,9 @@ def get_live_wbdata():
         if selected_rows is not None and not selected_rows.empty:
             selected_indic = selected_rows.iloc[0]['Indicateur']
             st.write(f"Graphique d'évolution pour {selected_indic} (10 dernières années)")
-            df = df.sort_values(by='Année')
+            df = filtered_data.sort_values(by='Année')
             last_10_years = sorted(df['Année'].unique())[-10:]
-            df_last_10 = df[df['Année'].isin(last_10_years)]
+            df_last_10 = filtered_data[filtered_data['Année'].isin(last_10_years)]
             fig, ax = plt.subplots(figsize=(8, 4.5), facecolor="#2368B3")
             ax.set_facecolor("#2368B3")
             ax.plot(df_last_10['Année'], df_last_10[selected_indic], color="#063970")
