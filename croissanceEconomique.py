@@ -9,7 +9,7 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.linear_model import LinearRegression
 import plotly.express as px
 from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
-
+from PIL import Image
 st.set_page_config(page_title="Prévision du PIB", layout="wide", initial_sidebar_state="expanded")
 # Indicateurs économiques
 def get_live_wbdata():
@@ -75,8 +75,16 @@ def get_live_wbdata():
     ventilation = ventilation.dropna(subset=["Paiements d'intérêts","Dépenses militaires","Dépenses de santé","Dépenses publiques d'éducation","Dépenses courantes d'éducation",], how='all')
     ventilation['Année'] = ventilation['Année'].apply(lambda x: int(x.replace("YR", "")) if isinstance(x, str) else x)
     ventilation.fillna(0, inplace=True)
-    
+   
 # Titre
+    # st.sidebar.image("logo/mahein.jpg",width=150)
+    image = Image.open("logo/mahein.jpg")
+
+    with st.sidebar:
+        col1, col2, col3 = st.columns([1, 2, 1])
+        with col2:
+            st.image(image)
+            st.write("")
     min_Année, max_Année = df['Année'].min(), df['Année'].max()
     selected_Années = st.sidebar.slider("Sélectionner une plage d'années", min_Année, max_Année, (min_Année, max_Année), 1)
     st.title("Analyse de la croissance économique")
