@@ -8,6 +8,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.linear_model import LinearRegression
 import plotly.express as px
+from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 
 st.set_page_config(page_title="Prévision du PIB", layout="wide", initial_sidebar_state="expanded")
 # Indicateurs économiques
@@ -364,11 +365,42 @@ def get_live_wbdata():
             st.pyplot(fig)
             st.write("")
             st.write("")
+    col1,col2=st.columns([2,1])
+    with col1:
         st.subheader("Analyse de quelques indicateurs économiques")
-        st.dataframe(df_indicateurs)
+        gb = GridOptionsBuilder.from_dataframe(df_indicateurs)
+        gb.configure_selection(selection_mode="single", use_checkbox=False)
+        grid_options = gb.build()
+        grid_response = AgGrid(
+            df_indicateurs,
+            gridOptions=grid_options,
+            update_mode=GridUpdateMode.SELECTION_CHANGED,
+            allow_unsafe_jscode=True,
+            theme='blue'
+        )
+        selected_rows = grid_response['selected_rows']
         df_pivot = df_indicateurs.set_index("Indicateur").T
+    with col2:
+        if selected_rows is not None and not selected_rows.empty:
+            selected_indic = selected_rows.iloc[0]['Indicateur']
+            st.write(f"Graphique d'évolution pour {selected_indic} (10 dernières années)")
+            df = df.sort_values(by='Année')
+            last_10_years = sorted(df['Année'].unique())[-10:]
+            df_last_10 = df[df['Année'].isin(last_10_years)]
+            fig, ax = plt.subplots(figsize=(8, 4.5), facecolor="#2368B3")
+            ax.set_facecolor("#2368B3")
+            ax.plot(df_last_10['Année'], df_last_10[selected_indic], color="#063970")
+            ax.set_ylabel("Valeur", color="#ffffff")
+            ax.tick_params(axis='y', colors='#ffffff')
+            ax.tick_params(axis='x', colors='#ffffff')
+            ax.grid(axis='y')
+            st.pyplot(fig)
+        else:
+            st.write("")
+            st.write("Clique sur une ligne du tableau pour voir le graphique")
         st.write("")
         st.write("")
+        
     df_depenses['Decade'] = (df_depenses['Année'] // 10) * 10
     df_recettes['Decade'] = (df_recettes['Année'] // 10) * 10
     df_grouped_depenses = df_depenses.groupby('Decade')[list(indicators_depenses.values())].mean().reset_index()
@@ -413,7 +445,7 @@ def get_live_wbdata():
 #Ventilation
     st.write("")
     st.write("")
-    st.subheader("Répartition des Dépenses Publiques")
+    st.subheader("Evolution des Dépenses Publiques")
     col1, col2 = st.columns([2.7, 1.3])
     with col1:
         min_Année_ventillation, max_Année_ventillation = ventilation['Année'].min(), ventilation['Année'].max()
@@ -445,7 +477,7 @@ def get_live_wbdata():
             df_sunburst,
             path=["Catégorie", "Secteur"],
             values="Montant",
-            title="Répartition des Dépenses Publiques",
+            title="Répartition des Dépenses Publiques par secteur",
             color="Secteur",
             color_discrete_sequence=px.colors.qualitative.Pastel 
         )
