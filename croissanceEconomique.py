@@ -77,9 +77,7 @@ def get_live_wbdata():
     ventilation.fillna(0, inplace=True)
    
 # Titre
-    # st.sidebar.image("logo/mahein.jpg",width=150)
     image = Image.open("logo/mahein.jpg")
-
     with st.sidebar:
         col1, col2, col3 = st.columns([1, 2, 1])
         with col2:
@@ -90,8 +88,6 @@ def get_live_wbdata():
     st.title("Analyse de la croissance économique")
     filtered_data = df[(df['Année'] >= selected_Années[0]) & (df['Année'] <= selected_Années[1])]
     filtered_data.dropna(inplace=True)
-
-# Mise en page avec les valeurs en pourcentage
     st.write("")
 
 # Fonction pour l'analyse
@@ -205,7 +201,7 @@ def get_live_wbdata():
         analyser_evolution(entre_percentage)
     ]
 })
-
+    df_pivot = df_indicateurs.set_index("Indicateur").T
 # Prédiction et analyse
     X = filtered_data[['Exportations', 'PIB par habitant', 'Participation au marché du travail', 'Taux de change officiel', 'Dépenses publiques', 'Chômage', 'Investissements directs étrangers entrées nettes', 'Investissements directs étrangers sortie nettes']]
     y = filtered_data['PIB']
@@ -241,7 +237,7 @@ def get_live_wbdata():
     future_exog = pd.DataFrame({var: forecast_trend(var) for var in variables})
     future_forecast = rf_reg.predict(future_exog)
 
-# forecast_df = pd.DataFrame({'Année': future_Années.flatten(), 'Prévision PIB': future_forecast})
+    forecast_df_PIB = pd.DataFrame({'Année': future_Années.flatten(), 'Prévision PIB': future_forecast})
     forecast_df = pd.DataFrame({
         'Année': list(filtered_data['Année']) + list(future_Années.flatten()),
         'PIB': list(filtered_data['PIB']) + [np.nan] * len(future_Années), 
@@ -261,7 +257,7 @@ def get_live_wbdata():
                 sign = ""
             st.markdown(
         f"""
-        <div style="background-color: #063970; padding: 10px; border-radius: 5px; text-align: center; box-shadow: 0px 4px 6px rgba(0,0,0,0.3);">
+        <div style="background-color: #063970; padding: 10px; border-radius: 5px;margin: 20px 0; text-align: center; box-shadow: 0px 4px 6px rgba(0,0,0,0.3);">
             <span style="color: #ffffff; font-size: 20px;">PIB actuel</span><br>
             <span style="color: {text_color}; font-size: 24px; font-weight: bold;">{sign} {pib_percentage:.2f}%</span>
         </div>
@@ -280,7 +276,7 @@ def get_live_wbdata():
                 sign = ""
             st.markdown(
         f"""
-        <div style="background-color: #063970; padding: 10px; border-radius: 5px; text-align: center;box-shadow: 0px 4px 6px rgba(0,0,0,0.3);">
+        <div style="background-color: #063970; padding: 10px; border-radius: 5px;margin: 20px 0;text-align: center;box-shadow: 0px 4px 6px rgba(0,0,0,0.3);">
             <span style="color: #ffffff; font-size: 20px;">PIB par habitant</span><br>
             <span style="color: {text_color}; font-size: 24px; font-weight: bold;">{sign} {pib_hab_percentage:.2f}%</span>
         </div>
@@ -299,7 +295,7 @@ def get_live_wbdata():
                 sign = "" #→
             st.markdown(
         f"""
-        <div style="background-color: #063970; padding: 10px; border-radius: 5px; text-align: center;box-shadow: 0px 4px 6px rgba(0,0,0,0.3);">
+        <div style="background-color: #063970; padding: 10px; border-radius: 5px;margin: 20px 0; text-align: center;box-shadow: 0px 4px 6px rgba(0,0,0,0.3);">
             <span style="color: #ffffff; font-size: 20px;">Taux de change</span><br>
             <span style="color: {text_color}; font-size: 24px; font-weight: bold;">{sign} {change_percentage:.2f}%</span>
         </div>
@@ -318,7 +314,7 @@ def get_live_wbdata():
                 sign = ""
             st.markdown(
         f"""
-        <div style="background-color: #063970; padding: 10px; border-radius: 5px; text-align: center;box-shadow: 0px 4px 6px rgba(0,0,0,0.3);">
+        <div style="background-color: #063970; padding: 10px; border-radius: 5px;margin: 20px 0; text-align: center;box-shadow: 0px 4px 6px rgba(0,0,0,0.3);">
             <span style="color: #ffffff; font-size: 20px;">Inflation</span><br>
             <span style="color: {text_color}; font-size: 24px; font-weight: bold;">{sign}  {infllation_percentage:.2f}%</span>
         </div>
@@ -387,7 +383,6 @@ def get_live_wbdata():
             theme='blue'
         )
         selected_rows = grid_response['selected_rows']
-        df_pivot = df_indicateurs.set_index("Indicateur").T
     with col2:
         if selected_rows is not None and not selected_rows.empty:
             selected_indic = selected_rows.iloc[0]['Indicateur']
@@ -509,6 +504,6 @@ def get_live_wbdata():
         else:
             st.warning(f"Aucune donnée pour l'année {selected_Année}.")
 
-    return df_pivot,forecast_df, filtered_df_depenses, filtered_df_recettes, filtered_ventillation,df_wide
+    return df_pivot,df,forecast_df_PIB, filtered_df_depenses, filtered_df_recettes, filtered_ventillation,df_wide,selected_Années
 
 data = get_live_wbdata()
